@@ -1,0 +1,28 @@
+name = "prompt-arena"
+main = "src/index.js"
+compatibility_date = "2026-09-01"
+
+# Serves everything in ./public as the site, and falls through to the
+# Worker for /api/* routes.
+[assets]
+directory = "./public"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+
+# Free image + text models
+[ai]
+binding = "AI"
+
+# Rounds, submissions and scores live here
+[[d1_databases]]
+binding = "DB"
+database_name = "prompt-arena"
+database_id = "50b04009-fb05-4a88-b45b-0ed3ae8ae4f3"
+
+[vars]
+ROUND_SECONDS = "300"
+IMAGE_MODEL = "@cf/black-forest-labs/flux-1-schnell"
+JUDGE_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
+
+# ADMIN_KEY is set separately as a secret:
+#   npx wrangler secret put ADMIN_KEY
