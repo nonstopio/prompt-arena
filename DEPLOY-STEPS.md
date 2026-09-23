@@ -54,6 +54,24 @@ database_id = "PASTE_YOUR_DATABASE_ID_HERE"
 ```
 and replace the placeholder with your id. Save the file.
 
+### 4b. Migrations (only for a database that already exists)
+
+`schema.sql` below is for a **brand-new** database and already contains every column, so a
+fresh setup skips this. If you deployed earlier and are catching up, run the migration files
+you have not applied yet, in order:
+
+```
+npx wrangler d1 execute prompt-arena --remote --file=./migrate.sql
+npx wrangler d1 execute prompt-arena --remote --file=./migrate-2.sql
+npx wrangler d1 execute prompt-arena --remote --file=./migrate-3.sql
+npx wrangler d1 execute prompt-arena --remote --file=./migrate-4.sql
+npx wrangler d1 execute prompt-arena --remote --file=./migrate-5.sql
+npx wrangler d1 execute prompt-arena --remote --file=./migrate-6.sql
+```
+
+Each is safe to run once. Re-running one that has already been applied fails with
+`duplicate column name` — harmless, just move on to the next.
+
 ### 5. Create the tables
 ```
 npx wrangler d1 execute prompt-arena --remote --file=./schema.sql
@@ -168,10 +186,26 @@ What the app does instead:
 - "NonStop io Technologies" is watermarked across it. Players are told twice — on the join
   screen and above the image while writing — to ignore it and not describe it in a prompt.
 - It blanks whenever the tab or window loses focus, closing the alt-tab-to-another-AI route.
-- Every time a player switches away from the tab during a live round, it is counted on the
-  server — reloading does not reset it — and shown as a badge beside their name on the
-  results screen, plus a running total on the host console. Notifications and second
-  monitors trigger it too, so treat it as a signal rather than proof.
+- Switching away from the tab escalates: the **first** hides the image with one chance to
+  bring it back, the **second** hides it for the rest of the round, and the **third**
+  submits whatever they have written and locks the entry against further edits — the same
+  path as the buzzer. The lock is enforced on the server, so a stale tab cannot edit around
+  it. Counting continues after an entry is submitted, because a player can still revise.
+- Every switch **costs 5 points**, before and after submitting.
+- A **long absence costs more**: nothing for the first minute, then 5 points for every 15
+  seconds beyond it. Away for 1 min 30 sec is 5 for the switch plus 10 for the 30 seconds
+  over — 15 in total. Timed on the server clock, and charged up to the moment entries close
+  if the player never comes back.
+- **Start Over** is only offered once the host has aborted a round, so a live entry can never
+  be discarded by mistake. It clears all browser storage and returns to the name screen.
+  Refreshing mid-round changes nothing — the name is in local storage, and the draft, entry
+  and penalties are on the server. The results row shows the
+  arithmetic (`70 − 15 = 55`), never just the lower number. Scores are floored at zero, so
+  interruptions cannot push anyone negative. Where two final scores tie, whoever stayed on
+  the tab ranks higher. Notifications and second monitors trigger it too, so treat a badge
+  as a signal rather than proof — and say so when you announce the rule.
+- To change the deduction, edit `BLUR_PENALTY` in `src/index.js`; set it to 0 to rank on
+  the judge's score alone while keeping the badges and the tiebreaker.
 - The server refuses to serve it to anyone without a running clock, so it cannot be pulled
   before the round opens or after it closes.
 
@@ -192,10 +226,36 @@ is submitted for them automatically. Their text is also saved to the server as t
 so if their tab is closed or their connection drops, closing the round sweeps that saved
 draft into a real entry and renders it. A box left completely empty submits nothing.
 
+**Tests.** Three suites, run from the project folder:
+
+```
+node test-sql.js       # every SQL statement parsed against the real schema
+node test-judging.js   # scoring, chunking, penalties, winner selection
+node test-player.js    # the player page end to end (needs: npm i jsdom)
+```
+
+`test-sql.js` drives every route in five different round states with a real
+in-memory SQLite, so a malformed query fails here instead of in front of the room.
+
 **Cleaning up the database.** The host console's opening screen reports how much is stored
 and tells you when a tidy-up is due, long before it matters — amber once it is worth doing,
 red if it has been left. It shows the one command that does most of the work.
 `MAINTENANCE.md` has the full set, a suggested routine, and how to back up results first.
+
+**Past rounds.** The host console has a **Past rounds** archive, reachable from the top bar
+or the landing screen. Every round ever run, newest first, ten to a page, filterable by
+Completed, Aborted, Not scored and Never started. Opening one shows everything the players saw and more: each entry's rendered image, prompt,
+judge's note, submission time, edit count, tab switches, and a **?** breakdown of how the
+score was worked out — plus the hidden prompt and the verdict. Aborted and unscored rounds
+are listed too.
+
+**Closing the tab and coming back.** The entry, the draft and every penalty are held on the
+server, so reopening the page restores everything. Closing the tab counts as leaving it, and
+the absence clock keeps running until the page is opened again.
+
+**Score breakdowns.** Each row on the results screen has a **?** button showing the judge's
+score, the rubric weights, each penalty with its reason, and the final — so nobody has to
+guess where a number came from.
 
 **Seeing past data.**
 ```

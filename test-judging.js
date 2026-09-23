@@ -2,14 +2,20 @@
 const fs = require('fs');
 const src = fs.readFileSync('/home/claude/prompt-arena/src/index.js', 'utf8');
 
-// Everything from the rubric down to (but not including) the route handler.
-const code = src.slice(src.indexOf('const RUBRIC ='), src.indexOf('export default {'))
-  + '\nmodule.exports = { judgeRound };';
+// Everything from the rubric down to (but not including) the route handler,
+// plus the constants it relies on — read from source so the test cannot drift
+// from the real penalty value.
+// JUDGE_CHUNK already sits inside the sliced region, so only pull what is above it.
+const constants = (src.match(/^const (BLUR_PENALTY|AWAY_GRACE|AWAY_STEP|AWAY_STEP_PENALTY) = .+$/gm) || []).join('\n');
+const code = constants + '\n'
+  + src.slice(src.indexOf('const RUBRIC ='), src.indexOf('export default {'))
+  + '\nmodule.exports = { judgeRound, BLUR_PENALTY, AWAY_GRACE, AWAY_STEP, AWAY_STEP_PENALTY };';
 
 const now = () => 1700000000;
 const mod = { exports: {} };
 new Function('module', 'now', 'console', code)(mod, now, console);
-const { judgeRound } = mod.exports;
+const { judgeRound, BLUR_PENALTY, AWAY_GRACE, AWAY_STEP, AWAY_STEP_PENALTY } = mod.exports;
+console.log('penalty read from source: ' + BLUR_PENALTY + ' points per switch');
 
 function makeEnv({ entries, scoreFor, winnerFrom = 0, breakChunk = -1 }) {
   const rows = entries;
@@ -39,7 +45,19 @@ function makeEnv({ entries, scoreFor, winnerFrom = 0, breakChunk = -1 }) {
         const st = {
           sql, args: [],
           bind(...a) { st.args = a; return st; },
-          all: () => Promise.resolve({ results: rows.map((e) => ({ id: e.id, player_name: e.name, prompt: e.prompt })) }),
+          run: () => Promise.resolve({}),
+          all: () => {
+            if (/FROM players/.test(sql)) {
+              return Promise.resolve({ results: rows.map((e) => ({
+                name_key: e.id, blur_count: e.blur || 0, away_penalty: e.idle || 0 })) });
+            }
+            if (/SELECT id, name_key FROM submissions/.test(sql)) {
+              return Promise.resolve({ results: rows.map((e) => ({ id: e.id, name_key: e.id })) });
+            }
+            return Promise.resolve({ results: rows.map((e) => ({
+              id: e.id, player_name: e.name, prompt: e.prompt,
+              blur_count: e.blur || 0, away_penalty: e.idle || 0, away_since: null })) });
+          },
         };
         return st;
       },
@@ -49,9 +67,19 @@ function makeEnv({ entries, scoreFor, winnerFrom = 0, breakChunk = -1 }) {
   return { env, writes, stats: () => ({ chunkCalls, winnerCalls }) };
 }
 
-const mkEntries = (n) => Array.from({ length: n }, (_, i) => ({
+const mkEntries = (n, blurs = {}, idles = {}) => Array.from({ length: n }, (_, i) => ({
   id: 's' + (i + 1), name: 'Player ' + (i + 1), prompt: 'prompt number ' + (i + 1),
+  blur: blurs['s' + (i + 1)] || 0, idle: idles['s' + (i + 1)] || 0,
 }));
+
+// Mirrors the server formula, read from the same constants.
+const awayCost = (sec) =>
+  Math.max(0, Math.floor((Math.max(0, sec) - AWAY_GRACE) / AWAY_STEP)) * AWAY_STEP_PENALTY;
+
+const scoreOf = (writes, id) => {
+  const w = writes.find((x) => x.sql.includes('UPDATE submissions') && x.args[3] === id);
+  return w ? { final: w.args[0], raw: w.args[1] } : null;
+};
 
 const round = { id: 'r1', secret_prompt: 'a fox in deep snow, shot on 35mm film' };
 
@@ -117,6 +145,95 @@ const check = (label, pass, detail = '') => out.push([pass, label, detail]);
     await judgeRound(env, round);
     const roundWrite = writes.find((w) => w.sql.includes('UPDATE rounds'));
     check('winner comes from the finalists', roundWrite.args[1] === 's7', String(roundWrite.args[1]));
+  }
+
+  // ---- 6. the tab-switch penalty ----------------------------------------
+  {
+    const entries = mkEntries(4, { s2: 3, s3: 1, s4: 20 });
+    const { env, writes } = makeEnv({ entries, scoreFor: (id) => (id === 's4' ? 10 : 70) });
+    await judgeRound(env, round);
+    check('clean entry keeps its score', JSON.stringify(scoreOf(writes, 's1')) === '{"final":70,"raw":70}',
+      JSON.stringify(scoreOf(writes, 's1')));
+    check('  3 switches costs 15', JSON.stringify(scoreOf(writes, 's2')) === '{"final":55,"raw":70}',
+      JSON.stringify(scoreOf(writes, 's2')));
+    check('  1 switch costs 5', JSON.stringify(scoreOf(writes, 's3')) === '{"final":65,"raw":70}',
+      JSON.stringify(scoreOf(writes, 's3')));
+    check('  score floors at zero, never negative', scoreOf(writes, 's4').final === 0,
+      JSON.stringify(scoreOf(writes, 's4')));
+  }
+
+  // ---- 7. the penalty can change who wins -------------------------------
+  {
+    const entries = mkEntries(2, { s1: 4 });
+    const { env, writes } = makeEnv({ entries, scoreFor: (id) => (id === 's1' ? 70 : 55) });
+    await judgeRound(env, round);
+    const roundWrite = writes.find((w) => w.sql.includes('UPDATE rounds'));
+    check('penalty decides the win when it should', roundWrite.args[1] === 's2',
+      `70-20=50 vs 55 -> winner ${roundWrite.args[1]}`);
+  }
+
+  // ---- 8. a big lead survives a few switches ----------------------------
+  {
+    const entries = mkEntries(2, { s1: 3 });
+    const { env, writes } = makeEnv({ entries, scoreFor: (id) => (id === 's1' ? 70 : 40) });
+    await judgeRound(env, round);
+    const roundWrite = writes.find((w) => w.sql.includes('UPDATE rounds'));
+    check('a 30-point lead is not overturned by 3 switches', roundWrite.args[1] === 's1',
+      `70-15=55 vs 40 -> winner ${roundWrite.args[1]}`);
+  }
+
+  // ---- 9. tie goes to whoever stayed on the tab -------------------------
+  {
+    const entries = mkEntries(2, { s1: 2, s2: 0 });
+    const { env, writes } = makeEnv({ entries, scoreFor: (id) => (id === 's1' ? 70 : 60) });
+    await judgeRound(env, round);
+    const roundWrite = writes.find((w) => w.sql.includes('UPDATE rounds'));
+    check('a tie goes to the one who stayed', roundWrite.args[1] === 's2',
+      `70-10=60 vs 60 -> winner ${roundWrite.args[1]}`);
+  }
+
+  // ---- 10. the long-absence penalty --------------------------------------
+  {
+    check('under a minute away is free', awayCost(59) === 0, `59s -> ${awayCost(59)}`);
+    check('  exactly a minute is free', awayCost(60) === 0, `60s -> ${awayCost(60)}`);
+    check('  75s costs 5', awayCost(75) === 5, `75s -> ${awayCost(75)}`);
+    check('  90s costs 10', awayCost(90) === 10, `90s -> ${awayCost(90)}`);
+    check('  the worked example: 1m30 total is 15', 5 + awayCost(90) === 15, `5 + ${awayCost(90)}`);
+    check('  3 minutes costs 40', awayCost(180) === 40, `180s -> ${awayCost(180)}`);
+  }
+
+  // ---- 11. both penalties come off the score -----------------------------
+  {
+    const entries = mkEntries(2, { s1: 1 }, { s1: 10 });
+    const { env, writes } = makeEnv({ entries, scoreFor: () => 80 });
+    await judgeRound(env, round);
+    check('switch and absence both deducted',
+      JSON.stringify(scoreOf(writes, 's1')) === '{"final":65,"raw":80}',
+      '80 - 5 (switch) - 10 (away) -> ' + JSON.stringify(scoreOf(writes, 's1')));
+    check('  a clean entry is untouched',
+      JSON.stringify(scoreOf(writes, 's2')) === '{"final":80,"raw":80}');
+  }
+
+  // ---- 12. absence alone cannot go negative ------------------------------
+  {
+    const entries = mkEntries(1, {}, { s1: 500 });
+    const { env, writes } = makeEnv({ entries, scoreFor: () => 30 });
+    await judgeRound(env, round);
+    check('absence penalty floors at zero', scoreOf(writes, 's1').final === 0,
+      JSON.stringify(scoreOf(writes, 's1')));
+  }
+
+  // ---- 13. a switch recorded while the judge is running still counts -------
+  {
+    const entries = mkEntries(1);
+    const { env, writes } = makeEnv({ entries, scoreFor: () => 60 });
+    // the player leaves the tab after the first read but before the write
+    const realRun = env.AI.run.bind(env.AI);
+    env.AI.run = (m, o) => { entries[0].blur = 2; return realRun(m, o); };
+    await judgeRound(env, round);
+    check('a late switch still reaches the score',
+      JSON.stringify(scoreOf(writes, 's1')) === '{"final":50,"raw":60}',
+      '60 - 10 -> ' + JSON.stringify(scoreOf(writes, 's1')));
   }
 
   console.log('');

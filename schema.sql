@@ -21,7 +21,8 @@ CREATE TABLE submissions (
   name_key     TEXT NOT NULL,                    -- lowercased, for one-entry-per-person
   prompt       TEXT NOT NULL,
   image_b64    TEXT,
-  score        INTEGER,
+  score        INTEGER,                          -- after penalties; what the board sorts on
+  raw_score    INTEGER,                          -- what the judge gave, before penalties
   edits        INTEGER NOT NULL DEFAULT 0,      -- revisions used, hard limit of 2
   notes        TEXT,                             -- judge's per-prompt comment
   created_at   INTEGER NOT NULL
@@ -37,6 +38,8 @@ CREATE TABLE players (
   player_name TEXT NOT NULL,
   joined_at   INTEGER NOT NULL,
   draft       TEXT,
-  blur_count  INTEGER NOT NULL DEFAULT 0,
+  blur_count   INTEGER NOT NULL DEFAULT 0,
+  away_since   INTEGER,                         -- set while the player is off the tab
+  away_penalty INTEGER NOT NULL DEFAULT 0,      -- accrued from absences over a minute
   PRIMARY KEY (round_id, name_key)
 );

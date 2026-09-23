@@ -60,6 +60,40 @@ input:focus{border-color:var(--amber);outline:none}
 .stat b{color:var(--cyan);font-size:28px;font-family:var(--display);vertical-align:-2px}
 .bar{height:8px;border-radius:999px;background:var(--line);overflow:hidden;margin:18px 0 10px}
 .bar i{display:block;height:100%;background:var(--amber);width:0;transition:width .35s ease}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 20px}
+.tab{background:none;border:1px solid var(--line);color:var(--muted);border-radius:999px;padding:7px 15px;font-size:14px;font-weight:500;cursor:pointer}
+.tab.on{border-color:var(--amber);color:var(--amber)}
+.rows{border-top:1px solid var(--line)}
+.row2{display:flex;gap:14px;align-items:baseline;flex-wrap:wrap;padding:15px 2px;border-bottom:1px solid var(--line);cursor:pointer}
+.row2:hover{background:rgba(255,255,255,.03)}
+.row2 .when{font-weight:600;color:var(--text);font-size:15px}
+.row2 .meta{color:var(--muted);font-size:14px}
+.pill{font-size:12px;font-weight:600;border-radius:999px;padding:3px 10px;border:1px solid var(--line);color:var(--muted)}
+.pill.published{border-color:rgba(111,208,140,.5);color:#6fd08c}
+.pill.aborted{border-color:rgba(232,104,127,.5);color:var(--rose)}
+.pill.live{border-color:var(--amber);color:var(--amber)}
+.pager{display:flex;gap:10px;align-items:center;margin-top:20px;color:var(--muted);font-size:14px}
+.bd{border-top:1px solid var(--line);padding:18px 0;display:grid;grid-template-columns:34px 104px 1fr auto;gap:16px;align-items:start}
+.bd .rk{font-family:var(--display);font-weight:700;color:var(--muted);font-size:18px;padding-top:2px}
+.bd .th{border-radius:9px;overflow:hidden;background:var(--raise);aspect-ratio:1;cursor:zoom-in}
+.bd .th img{width:100%;height:100%;object-fit:cover;display:block}
+.bd .th.none{display:grid;place-items:center;color:var(--muted);font-size:11px;text-align:center;padding:6px;cursor:default}
+.bd .nm{font-weight:600;color:var(--text)}
+.bd .pr{color:#ddd6e6;font-size:14px;margin:6px 0;word-break:break-word}
+.bd .nt{color:var(--muted);font-size:13px;margin:0}
+.bd .facts{color:var(--muted);font-size:12px;margin-top:8px;display:flex;gap:12px;flex-wrap:wrap}
+.bd .facts b{color:var(--text);font-weight:600}
+.bd .scwrap{text-align:right;position:relative}
+.bd .sc{font-family:var(--display);font-weight:700;font-size:24px;font-variant-numeric:tabular-nums}
+.bd .neg{color:var(--rose);font-size:12px;font-weight:500;display:block;margin-top:3px}
+.bd .why{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;border:1px solid var(--line);color:var(--muted);font-size:11px;font-weight:600;margin-top:8px;cursor:help;background:none;padding:0}
+.bd .why:hover{border-color:var(--amber);color:var(--amber)}
+.tip2{position:absolute;right:0;top:78px;z-index:30;width:250px;background:var(--raise);border:1px solid var(--line);border-radius:10px;padding:13px 15px;text-align:left;font-size:13px;line-height:1.65;color:#ddd6e6;font-weight:400;box-shadow:0 12px 28px rgba(0,0,0,.45);display:none}
+.tip2.open{display:block}
+.tip2 b{color:var(--text)}
+.tip2 .n{color:var(--rose)}
+.tip2 hr{border:0;border-top:1px solid var(--line);margin:9px 0}
+@media (max-width:620px){.bd{grid-template-columns:28px 72px 1fr;gap:12px}.bd .scwrap{grid-column:2 / -1;text-align:left}.tip2{left:0;right:auto;top:auto}}
 .note{border:1px solid var(--line);border-radius:12px;padding:15px 17px;margin:22px 0 0;font-size:14px;line-height:1.6;color:var(--muted)}
 .note b{color:var(--text);font-weight:600}
 .note.tidy{border-color:rgba(242,160,61,.5);background:rgba(242,160,61,.08)}
@@ -81,8 +115,10 @@ input:focus{border-color:var(--amber);outline:none}
 <div class="wrap">
   <div class="hostbar">
     <div>Admin console — host only <span>&nbsp;·&nbsp; hidden prompts appear here, keep this screen off the projector</span></div>
-    <span style="opacity:.7;font-weight:500;font-size:12px">build 20260921-1247</span>
-    <button class="linkish" id="newsession" hidden>Start a new session</button>
+    <span style="opacity:.7;font-weight:500;font-size:12px">build 20260923-1355</span>
+    <span><button class="linkish" id="pastlink" hidden>Past rounds</button>
+    &nbsp;·&nbsp;
+    <button class="linkish" id="newsession" hidden>Start a new session</button></span>
   </div>
   <div class="bar"><div class="brandrow"><img class="brand" alt="NonStop io Technologies" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAARoAAABgCAYAAADCfb2pAAAsFElEQVR42u2dd5wWxf3H37PtKVfoHaSeihLUqHAIWDFGsQUUsaBgRdHYEgJGk9ixG4O9I+rPAgoa0YiICorRCIqCSBEbB+cBV7h7yu7O/P7YZ5d7uOO4oygH+8lrg/c8z87uzs585ttHKKUUIUKECLEDoYVdECJEiJBoQoQIERJNiBAhQoREEyJEiJBoQoQIERJNiBAhQoREEyJEiJBoQoQIEQJja09U1f4/hECEnRCikaK2mF0hRPC5EKLGb6t/Vq8Z0tDIYAXhpAr7JkSIHSfRVJ9IxYlyXKUQAnbXJAb/2XWh0TqWF5JMiEaJ1WvWkKiqIhKJ4LoujuvSrFlTlIJkIkGrtm0whGdlKS0rI1FVRZs2bdC0+lteGiTRKMB2He764k1uWPBvkukEaNruzTRSEo/E+fv+x3PZvoOImCZaSDkhGoO6JBVK1xh21um89+ZM1q5bS05uLhHL4u+338Ib01/jzWmv88rbMzjpqGMoqShj8HHH8cncj1i9ejVt2rRBKVUvNcqoP8koXKW464s3uebjF4lE4kStGBK1204rBWgIXCn5y0fP0zKSx7k9B6JQodUmxE6/SApdIIE7b72NqvEbGDlqJL1+8xuuvvJK9ujelbdefQ3Lsnjsnn9x8qDfM/edd1my8Cssy8J13e2vOvkTZ31qAzd//m8ikTgKkEoGE253hYtCEwLTinL/1+9yWkEfcoxIaK8JsXPzTOZfHejSaQ8AcnNz0YRg3169AHDSNn369OHTBfNZl9jA1KlT6dy1C2XrS0kmkw26XoPc27aUVKYSCGq3VO/OYqhC47sNa0k5TtghIRoVpJS4rouUnuDgui5KKRzHoW/fvvTo1p3rxl/DhspKTj9teGDL2WFEIwAhtNCpvRmpL6IbDXb7hQjxa0PTNHRdRwiBECL4bykleXl5DD/tNB74579IVCUYMHAglZWVDTIEN5ho/AkVYjMrQyjlhWjESKVSpNPp4O9EVYJUKsXgISfRtlMHTvzDSRT06EFxcXGDF1Qj7N4QIUIAnHHGGbRs2TL4e+gpQ+nQoQNd23fi08ULaZGTT8n3qxg9ejT5+fkNarte7m3fGFxUVUb7yVcQMSPh6r2JSukqRatoLotOuYlmGWN5qESF2FXMAtvqRQ1znUKECAGA4zhZRl7/b4HIODw8x4dt2w12BoWqU4gQITwyMIzN/h3YZITANM1QogkRIsTOh5BoQoQIseOlpV/yYoKGp5c3xOisbYcYFl8XDREiRCMlGgm4bv0iZ1WGlCxNrzfZpN1tj8o1ND0cFSFCNEaiERmSiesWHfOb1ls6SUuXb0pXYeoR6s6o8pzJPZu22+Z7/bFqPVVOGg0RSjYhQjQmotGERtpOcMeBwzix4KD6xZgIkK7iX3OnM+G7d4iaMaSqGZks8HKwCpq04Z3j/rT1KlPm31eX/JdLPplM1IzjZpJGQ4QI0VhUJ6XoGGtC23iTBp1262Gnw3uKCSvfIWrFUYgaqpQCorrZ4LZrQ4dYE4Sr0Axww/ERIkQjIxogJR1URiapj9lWKYUWNbn10DMwzQg3Ln+LmG6BqEk2UqltysPy78lxbOIVCkuDlAVaqD+FCNG4iEZk/scmRJNNGl64s59JqpSCmMkNRw4nJzeHcZ+9SDSSi9iEVhS1lwj3oxlr0cxqeMCE38avlDuwuSLR26UtsfuVUFdKIWuo2gIhwnLyuzTRbA7ZbmmRJWH4ZOOg+MvBJwCKcZ+9RMTKRbHRhuLXNK0PoeysqO0+61sqcXsRVKMnl2p9JoRA3wyhSKUa1dgIiWYbVxwhBF8tX4rr2Giahu24dGzbllbNWmSRjQEZsjkRAfzlfy9iRnKCSbW6qhTbsTENM0s1W1tZzk8//oioRkRSSSKmxd7demz1RN6eE8MzaLusT1XiSonQBEpKLNOkhZWb9bv6oNJNUZ4pUAYCqSQ5kSj5RmyXXceDseKTh1Is/24lS51Syg2JoSCtXDpG8jmw+R7EYvEa526NpBgSVWMgmswLfmjJbP697DMswwRXQn6cx4+5gP5tC3CVRBcaINABVyjGHnwi7Zu04Py5z+AgiWgGaxLlnDn7Mf7viAvRdB2pJJrQKEmUc+Jb9xHVrUwWKiRdm97d92Z6tyt+9fq+SkqEplFSXMyIc85h4cKFXuEhTcN1HEZedAET/nY9ypWgizrvVUqJpmnMe38u54waiZ220XUd13Xp26cPkyc9Q35+/q9OrjtGLffG02c/LuWmxf/h05KVuLZDlbRxhR9ioYhpBpZmcGCrzlzS5mAG/aZPEDtVH8IJiaURq04JHEqcKkxlIjVw11dxyn8e4JXfjaGwbY+AbAReMXAp4Ky9+qNrGufOmYSjXGKmxUsrPkYoeOqI84gZVrD6rHWqsHBxhUIDEtKmjPRO9SJcx6V4VRHFRauzPr/3lts4/sijGTBgAK7routbDihMJZL89N0PWZ+tWVWEdHctP5ryRAyEEHy+eiW3fjmDqd8vwHYd71tNQ0N4u1JkmKiKNEpKVn1fyus/LOSAr9/krt4nc3jPA1BKekW7N0M3jpIIqbKYrT7vI8ROQjQCQUToSFOnPA6GMqhIV3DSzPuZNsgjG0dJjAzZePVfJKcX9AME5895mrTrErdivLjiYxDw+KGjyLWiOEoSQUdaGhVRPBHalZiZNK+dxakkhMCKRIJSij6ppNJprr/+el55bRo5kVi9pBFN04hEIqTT6aAtKxLxtofZhUhGKs/UO2XF/7jwg6coT27AMiOYuoEuBIbQkSjS0kEpr49jmoHSlEcaAj4r/4HjP36UB40RnFnQL7Oo1U41j0x6kq8+/gxN98aO67pcdNUf2a/H3iGTNAaiqT7hhWfNI6IZ/JysYMjM+5kyaAz9qpENeJu2eWRTiBCCcz94krR0iUXivLh8HgBPH34eEcPEVV67XtvesTN6rZVSWYfjOOi6zsyZM3ny6ae57KKL610HZNO2drVi8kopdKExv2Qll7z/BFVOmpgVx1YuutCwlSSZXA/CpEVOUwxNJ+U6lFatB90kakRwlSRqREg5aS778BlayQi/3/O3Xl/VQspvT32NV6dPy/qs/3FHe0SzmXNC7GREsynpeMW+TVYnKxg68wFeOmo0/dvtiasUeuaF+mQzvEdfhFKMeP9J0tIhbuXw4vJ5RHSTsXseha5pNNYYX1+yufHav/H74wdT0GGPXdLG0rDx4T3/BjvFLQveYF1yAznRXFLSxRAaSbuKTmYzrth/MB3atqNDrCm60HCUy6qyddzz5dt8vO5bLN3CURJTN6l0bS7+4EnebtmOHi3a1Wq7i+flYhgbC9ArpbAsK2SRxko0wSRTkqhuUZQs55R3HmLKUaM5pBaycZTLaQWFAIz44ElS0iFmxXlm+Ud8X1aCJXQSjbi4puu6/FxSwm033sxjDz2MlHKH2gZ8CUgTWo0u87/z3cdbgr+Fx6aqXdZ1aqmor2TGXrKZawhgyfpVTFn+X6LRXNLSRUOQdm36td2TZ/qfR/cWbWue2BYO79CTYbMf4v2iJVi6ha0klmayMl3KEys+5OYWQzZWlasmCbqOg+M4WUQj/W1KMhLNlvqlzmduYN/WJqlusW8z1Ql+6YVqp69H4yiXqG6yOlnOkHceZN7qZehC4FbrYEPouEpyWkEhTw8chSE0bOUS0y3eW7uM8photBG+/qDTNI3nnp7Ey1OmBHaXHUEw0nWD6/kkI6UMCMP/Tghvh84tDjBNq3EAnhvfv45/DSVRGWOryFyjNqLyJY3Pli5GCSCTk+YolxzN4o4eg+neoi2OkjhS4irvcJTEli5tcpswqfAcOsabI5XEymwhZFlx5qxZhiPdrGf1j9qkl3hujve9rgf9Uq++9T+TMiCLrL6tx/vd9P60zPbU7ibXqf7+fDKUrvxF1emdWqLxXZaukkR0gzXJck56eyLTj76UvtW8URvVKMXpBYUoFOd/MAlbuUR0E1dK3EZKNIGaJASJZJJx117DoUcdSav8poE7e3tASi8cQOg6a34uZtHSr1n4zRJWf/Mt69avRwD5+fn8pt9B9N/vILp27Yquadi2XWdpx6+++iprV8Pc3Fy6dumCFYlQlUqxZMkSPpr3IV8t+AKpFLqm02WvHvQt7EvhwX0wNX2zquJivQKqZdkrIGKa7Nm+k9cWAqGJGoNKSknnlm0pbNudl7+ZgxOUBhF88P0XrEtuoE28KevXr2fFihXBqWvWrKn5fJ8vpH28aSDRFBQU1Agh8Pe51nSdsrIyVvz4HXPmzWP551+RtNPoQqNVu7bsvd++7F/Qk4KePb3FxHHRjNpDDhWw8ruVrCtZGwS1RmJR9t1nX3Rdp7jkZxZ+vYj3Z75L8erVIAQ58Rx6Hrw/vzv0CDq17+C990wYyO5NNJnAK8/DoLA0g+JUBSfPvJ9XB42hb9seOFJiZCablpF0zijoh4bgvA+ewnZdhK5RaTS+vKV4ThyhoLKqClwXTdNY/vU33HbDjdx11124rheDI7aZZDwR20Xx/Esv8M977uXTjz7e7O87derEmWeeydnnjqRnwV5IVwaemE1x1FFHZU3Q/fffn/mffcbSpUu57pYbeOGpyZu9zrmXXsw/xo6nU8dOtX5vV8uuFxm1wEVRobk0q7YI1TqugH4tu1JWtSErqtxVklQqDXF46623OP3002slfx/jL7uS8dW+mz59OieccAKu62IYxkbC0QUvv/4qTzzwCO++++5mt5SNRaKcd/kYzhxyKoV9+2bip7TshQeBK+CK8WOZ/vxLwXct2rRm4eKvWDB/Ptf//R98POfDWq/Rq1cvzr/8Es4bPoLc3FykUtulaFyjVZ1cKWvkM0U0kzXJcoa88wAfrl6GoWk4mQEnIFCrhhcU8vjAUWgZg3FjIhl/IkRMi3MuuoBOXbugMmqIYRpMmjyZme/PxjAM5LZuwasUmiYoKl3LqHNHMmLY6Xz60ceYloVpmliWFRymaWIYBj/88AMTJkzgpJNP5vnnn0fTNS+ptRZRvFWrVpimSSQSwTRN8vLyeHXaNIYOHcoLT0322s58ZxiGt2uiYWCYBk9MfJChQ4dS5iRqvfXukWYBySq8omVlqQQPLpqNoelIUXuFRr9/r9rv97z5u8t5/eg/BseM311Bx3xvb6N4PE40GiUnJ4dYLFarXcw0TWKxGDk5OUSjUaLRaLZ9SghKS0u5cvxYhv/hFGbMmEEylcIwjKz+NU0TwzRI2mkm3n4XJxx/PLf/827Qtc2qOE2bNMU0TeI5cUzTJMeKcNM1f2PIcSfy8ZwPicViXtuWhWEY6LqOYZp8+eWXXHHBJVx++eWUlZZCddVqdySa+wqHY+kGrpLBgJIoz0CcKGPoOw8wt+gbjIza5EMXAltJhhf05cmBI3GV0ygNwetLSzn+2OO4dMyYwCgsEJT8/DO33HQzZaWlaJqG3Mq6OX5a6k9lJZx1xhk88+QkNF1HNwzsdBrbtkmn08Fh2zaO4wRxOksXfc0555zDc889562ItXSx4zhBO7ZtM3/+fEaOHMnChQsBvLZTqaBtKaVndLUdDNPkk08+4ZYbbsoyLPvkcUTHnigniZ4ZxgLQBDy5/EPu++8baBtSWSu1IruekUQhIhYiYmYdrvLsI6lUimQySWVlJYlEola7iW3bJBIJKisrSSaTwU6PviRjp9KMHz+eeyfcgVDC81pt0i9B39oOKIVpmpSUlPCXK67mhttv8WwqjlsjJMN1XWzbxk7b2LbNqqIiHn70EZIpT1pKJBJe2+l0sHWKY3vR4pFolCeeeIIJ996NpuuB8Xu3IhoBOK7L+XsfxjMZ465bTZd0lCSqR1idKGforIf4sGgpuhDITZIsXSU5tFV34gmQjdDhpGkalevL+OOYS2ndrq0XW+M6mJbJe7PeZdLUlzzVSW3lw3nuBybeeQ+zZvzHE/UzEx2gT58+THzoQaa//zb/9+Z0Lr7sUizLQkoZBAPats2FF17Ip0u+rNdg3bBhA2VlZQD89oADuPO+e3nsped4/KXnGHLK0OyJlIkjeurRx/k5UY6maVm2j27N23JM14Opsqs8Ww5ekbXSVBVXLpjCoNn/4qX/vYedSgfjyjcku0oGMVubHnrGZnNAn4OZ+MwTPPbiszz24rP8/thjswz0AKMvHs0TU/6Ph5+fxNPTXuLgQ/oG704Iwb+efJiHH36YaDSKVDIw/nbp1o3x48bxwr9fZfp7b/PnP/+ZWCyWFT8lhOCOG27hP//5D5qxZQdA9X2ZDu7Th1tuuYWH/28ST7zwHGedeWaWpGWn0xiGwV0Tbmf2++8hNLFDHAw7vY1GCSizE/yh20E87bqM+uApbOliap704nmjDNYkyvjDOw8w3bfZbBLUV+YkidoKK6moiILeyFQoR7pEo1FuufEmzj//fAQCx3ZQSnHtVX9iyDHH0aF9+wavRlJ56RifLPqCifdNDDwdvrfi6quv5uabb87a2+e0Y05g9JWXMfykISxe+BVuxm5UWVnJny6+jFmz3t2iri+EwDRMrr3uWsaNG5dlSB455DRenDGds08eFkxK13UpLV3PO9NnMPy00wLXvqskeUaEuwqHs7i0iO/Li8mJ5OAoia4E0hDMWv01H6xeyh7L3uSgFp0Z23MQnVq0obkZD9Sg6ja+TVWrHp270KPzqODz2dNn1Hieo4ecyJBBx9YwrOu6zvc//cgj994fkIfvch5xwXlMnDiRfGujmnXCoYO4+OKLOeecc5jzwQfe+NV1KisruemO2+gzsD9NonHPyF1LH/tOAaFp3HDHrYwdczlG9b495TQuGj2aYacOo2h1USB82qkUjz3yKP36FhKJRHZYjNZOrTr5g9ZXgSKagaNk8LmrFJZmUpwo58SZ9/PxmmUYYqPNpnobjTW8zV/FzzvvPM44Z0SWm7m8rJw/jx2LEg0Xe5UrUUJwzy23saG8PBjYUkpGjx7NhAkTAmOm8ld7oHfXPZn88gu0aNY8S8KYO2cuC5cvqWEs3XQCK6UYc9XlXHfddRtJRhHEfJxyzPGccfZZgTEVwE7bFP30U1bbuvDsQvs2a899hafTs3knKlOVwWKkCYGlGSgNVlT8zAsr/8tBM25j/6nXc/Xc5/lw1TfYVUnPxscWIqcz0eS2bdeUIlzXr00RHALP9T/55Rf4ZskSTNMMpIV9f9OLRx95dCPJZPrXlZKuXbsyceJEWrVtE/xe0zQ+mDmL16dNy7il3TrtemefN4prrvgThmHWeIQBAwbwl+uuQWhe3/ley9dee40V335b57vbpYmmulHYJxtLaF4MRjU7g6V76Qonv30/81Z7ZOPKXSeB0J+gN98+gS6dO2cZJZ9/7jlefP0Vz1ZTT4OeUgpd11lbXsan//tfhmS882PRKGedeZYnTWWC03z3uk86vy3Yl3PHXIRSCsP0yMh1HF549KksW0pdkyEr2ExknlFKDMOg4IBeWb8HqNiwodaFyFWSk7r+lnePH8uVvY8l34xSmaxAKM84rKFhaDqWZmFqOsWJcv65+G36v34r5739KDO++wKDakXWNqfLizqC3ETwgJ42qglSiQTTJr8QqDT+847963giStSIa/FCBRx69+7Nueeei2mYnmSUIds3Z75NMpnE0HXYNM49I41alsWxRw4KVOxNFywpJZdccil799w7GAearlNeXs6XK5dmCEHsvkSjaZ69ZViPPjw1cBQ62cZfBUR0kzXJCobMfJC5RUsxMjr7rrKVgeM4dGndnj/9dXxgkPXVnGsv/zMrVqyot8jreUNg/ryPWVdckhmr3kDsM7A/3fYqyCQ/11QplJQoFAMGDAgCznzJZsbbbwWrdF1E09yM13qvvpG3eTQ36/dKKUpKSmpt009DaRPL5+5+w3ll0KVcuOcRIKAqUZax7W1cljShEbPixMwozxR/yslvT2Tchy9Smq7yJIbttKKvrSjjm2VLs56za9euDBk6FAS1xj/pGe/dGSPPplnL5p49J0NIS+YvpKSkBKFpbM72r5SiKpGocxyYUnHSCScGv1eZwMkFH3/qs/fuRzRqkwFlK8mpPfryzGHnognP2+I/gJeuYFKULOOUWQ8yd9U3XpY3u8aGcN6gUJx15lkcfeLgQLUQQrBsxXJuuPkmdF2v19P6q+nSZctYt35dRrf3Bliv/XrTunkLXNepPRgwswLv2akrHTt29ILKMr/bkKiiCjdzH3VIqJuZKb5E0Tw3v6Yx0di8OdFXo2wlObz9Xjx42DnMGfwXbi08g+55rUjZSdJuGltKJBJXKVwlyTFzQBPc9sVrXDr3WcrTSbRtJBt/mi74ZjGlpaVZ3x144IHk6pHNn6tpCAU9unYjJy8vy3v11deLKS4uzvIWbm5RrlMy1gT79Nwne1wpxaL5n9eqGu4WRBPRsgesmbG/nNqjD5MPHYUhdBxUEJjlKElMt1idKGPIrAf5X/G3NDVi7AqJy95qK2kSz+Hv466hZauWWarNq1NfYda7szxj8RZia/wJvXr16kCN8ju6RTzPC3zbghrWrEVzunfvniV5VJaWs+zLRZ4KUcf5W5K8nFrU3i3ZDjQhgvGh6ToHte7KuAMG8+FJ1/Dl0Jv4837H0imnGUIJ0tKGzL5hQghikVyeXTqXS+Y+Q6XjucS3ennKPNuqJcuD5/T/7dKlS53tCsCVLjHDotsenYNFwTRNElVVrF+/vuYK3EAWFMCeB/eu8VXatnc/97aPGcvmZ2rPVM9r8tSmYT368tShI7GEji2dwBLvZNIOipPlnPzOA8z49nMiW1hhGwt0XcdOp+nf7xCGnTE8WO10w6CstJQb75hAIpUkGrHqnOj+gCoqKgra9Y2PzZs3rzOZsS6ykFLipLd9VaxPxUOpFI50axx6hiR8qaRFJId9W3Tk9j6nsuKUW3huwCj6NO9MOp0E4fWFqxQxK86zi2cz+8fF22dhUDXJ0XdZ1/ddN4ScG4JoLNZg8t9liUbXNIbNeZSXFn+EkXHzbhSVRaY8RCFPDhxJVDNwpAwMWX66wqqqUi745BmkrqHtIvVYdMNASsnVf7ySffbu6cVOOA66oTN7xts89tQT6FakXm3F4/Ea0oKh1y/ioXrSXnVdV/xC3awJgaHpNQ5/pw3fLqOqCQC6qXPKXoXMOfIqzu9yCLbjFcTyiEkizAiPLp2DLd1tLu9aG+E2JC+t+m99Q/X2it6t3FAZEo0/OAyhYWk6Z855lBcXf4Sh6Z44X8296SrJaT368sTAUZiZVITqIem60IhYMcrigrTBLlGY2ze8duvWjRvvut3bJ8ubLei6zr/uvIevFy0inpOzRWkkNzc3kET8z9aVr6+XCJ1KpaiszB6wmqlj5MV+kX74cXUR079bwGvffx4c075bQGmysoY6Iqr9JZXEaJrLo4MuYECbHtjK9eoJK4WuG/znx0Uk3W2Xylru0b7GZ36gYn0mQHlZefCuHMfBsixy6ninDTF6VlTWJBp3B5d53WkD9rxMXgMlBKPmPgZKMWyfQ5B4+boCkalF43mjwCt85WYqrKnqhk8BSVP8YqvtL6FCSSkZctzxnD3ibCZNmhQE2y1dtow777yTRCKxWduGTyodO3bENE0cxwliWn5aW+ypYxkVZNOV3W+voryclStXZhmXY7k5dOvaDbUds8prGxcA//5pIVcvfDUrcdKWLguH/IOm0ZzNVh/SMt41pQu6N2nNnOLlG6s7Iki4acpSleSZ0a2qYOSrswX77FWjz5YtW1avhSQlFGvWFgd/O45Dp06daNWq1XaRPoq//aHGWGjerNkOrXG0U9tokq6NrpkkgYs/e5FnP5mF5mYPfiNT+GpYj748M3BUUC5C2+TRxC6246SmaSgpue6m62narFnW5ytWrAhybuoSy3v27BmUNPAnw5IFX3puVF0PasPURlKffO25Ww3TCIimS4dO5JiRetWp2VaUR6HSSVPlZg4nTcJN893332cWb1WX3oWGoKBJmxpEqgEJuwGF6zcz59vltSAnHs8i+nnz5lGWqtysxOhHWn8y7yPWr12X1eedOnUiPz+/zmtWV7Pqss299drr1U8AYP8BhVlOgd2KaPZp0o4qJ0nEiFBhJxg5fzIPf/RGUPPX7zi/8NWwgr48fei5Hvng1hqqvYuxDT06deHW++7OknS2JE1omgZScdCAQ2i/R8esQfjJvP/y5ZdfBiJ79UHrxXV4U/ijme9lKsttPPfQww/b4dXb/JYHNe2GpeloQqChoWfiih4s+iQzsAW2dHGV9KJgM4enXnutzPxpMaqaug1eKFzLeH6t87m2CSwdNyiSXp2wmzZpQr8B/bPyosrLy5n02JNe39o1+9Z3Lz/39DOsW7suKGallOKgQw+hdevWSMets7iWm/GkuW52EqZPYkUV63nrnZkBKflt7de7d6YNuXsRjVSKVwddwqFt9iSRrsIUGtIwGL1oCg/PeR3hKKTIDkl3lWJ4j748NXAkEaF7eS+7MtlkBvbZQ4Zx3PGDg2S8LRkN/RyqXMNi6CmnIDQNx3UwDIPKqkquvfZaioqKsCzPe5VOp3FsO1PCQWfyqy/x5OOPBwNY13VycnIYds5ZXga1tuOH1QEdejCk0wGknTQCkSl0pfHKjwv4x2fTqUgnMDUdXXjpCP5hCC9W5Y4v3mLummVBzI8GSOVyYF4HonrtdYAjkZpG9sqiEjShoZyNeWJKKaLRKMPOPitIrfAn9A03XM+qn4sxTAMUQXa1hiAajTJjxgxenjIlIAEpJZFIhCP69g/eWy31VTEMg3Q6zVOTJpFIJYlEIkjHDbLDfbXorutvpmRN8cb2XZfu3buzb5eC6mac3YNo/HiC9nkteOnI0fRrsydV6SQxzUA3TEZ/PZWH5r2BboNbjWy0arVovHQFPcsbtavBH4jxeJw/jRtLXl5evV2ouuEN9NGXXUr7du28uj2ZVW/u3Lmcf/75zF+wAE3XsSwLwzQpWb+OR556nLEX/5FURjXTNO+8Cy69mJ57dNsuNoR62jS5ep9BmEJH1zYSiQZc/+krjHj3MV5a8SnvFn3NsvJivt+wlmXlxby+cgF//OhZ/v7ZqzgZe563UOm4yuUvex5JzKi9YmC3Ll1r1PN94403KK+oQDMNKlMJKio3BJN/yDHH8dvCPjiOEwQclhSXcPLJJzHnk3mgiaBeTIWTYvq0aYwZM4aff/45IGvHcThh8PEMGjQImUnRqA1+7NTsd2Zx4cWjWbZ0KbqhB/Vu1qwrYcKtt3LfffcF9+8vSiNGjKBd+3ZZToHdxhiMEFQ5KVrnNOHFo0YzbOZDfFS8lLgVw0Fx2eIpAIwuHIxreIWtfCOmH2cDgrPffyKQbNQuSDb+RO9/UF8uuOAC7r777mBV3RKZKxRt8poy7vq/cdn5FwXEpWkab7zxBl98uZCBRx3BHq3bUZFOsGjhl8yeOSvLKO26LnvvvTd/ve7arNq3O5JcBQql4DftunDxPkdy3/zXsWJ5CKGhlCRqRpm28n9MW/Ff8uNN6JbfCks3SLsOn6/9AWUniETzMIWBzGztU+lsoDCnCwN79A5sPL6K5Rt4u/ba2/vvjH0MYOrUqVRWVdGpZw+KVnzHsBFncPbQ4bi2Q4uWLbnp5ps49cQ/kEwmg4n9yYfzGH7iEAb87kg6tGlL2nFY9u0KZr/p5TP5eUlKKdq2b8e4G/5GLBYLFoK6+kbTNCY/+TTz//spv+3fl/bNWpFybD6Z/xlzZ83O+p1t27Rt25bhw4cH6lZdEdiNnmhULYevDiml6JjbnJePvphTZj7IR2u+IWZ5uTJXLp6KEHBR4WCUvnFA+IWvfG/UWQHZaFn1ZXdGCWXToz7nAFiWxV+vvZYZ77zN4s8XYhhG4InaXFt+7tLo8y5gfXkZf7tqbDCxDMPgx+9/4PknJ2WdY1pWUK/GdV169uzJs88+S8ucJrWWGNiaZ9r0vOpGy4AmBUSEwY2/PYl2sSbctWgmJZWlWKaFqyTxSBwBJFybBSXfBfvdRo0IuhHBVl5yio6gMlXB/vEOPN3vHNrmNttsqYT+hf1o2qQJpeXlwfeapvHWm2/Cm95vCo881LvDTH2X3w08gnvvvZcxY8aQTqc99VPX+Wl1ES9MerampFkteLJ1mzY8PeUFDty3NypTeqKuBURlCpODV6v5q6++qulAyDyb67rk5ORwzz33UFBQUKe0tMuoTn69VzJFnIN/q9kT2uc0Y/rRl1LYuoCEk0ZTns3mj4um8PBH/0bI7JXUDFzffXlm4LlYwgCpPO+TVOxseQlKKdKpFEop7Ew4uF9xbotqUGZwNm/WjJuvv5FYLBYYcl3XDdqu7ZmFpmG4cO2Vf+aGu28LvBa+KK4bBkbmEEJgp9NBVf2e+/Rk8uTJHHDAAYERclP4zySlzMpirtM+l6nQn0omg9+7m+Th+IXr86M5jDtgMK8eNIo+TTtjS4ktHarsJFWu148RwyJqRogYFrZ0qXRSpB0b23XQNY0L9zqCacdezp5dunlV92ohSyUl3Tvswdgb/x7Yxvz+1XWdaCb4MagL4+9oYOicf/75PPfcc/To0SPoB/+9+X1bffdLgH177ctz06fwu8KByExt6Lqkf4CcnByuuOIKCgsLg3vwr1FdSpJSEs/J4YEHHmD48OG/yD5hv6pE40dvXnXAsQxr0ztr1ZJKkZdJQDM0HakULeP5TDt6DN1f/CuVMo2FjqObjF70MgLFhYcMRmki2I/ZyEgwpxX0ZZ9YK34sWoVlGNiuJC8Thr2z2G90Q6d1+3a0XluCYRg4roMmNKLx+gXAaYaBdFz+cNJJnDR0CLPeeScY7K7r0qZ9O7TNxEkozxLKdVeO5dRjT+T+++9n2uuvsX7tOio3bAjIxzIt4nm5tGzZklsn3MpxgwcTM61g94La0KZDeyoSVVn3sqWVM54bp1W7Nt62vqm0RyjNmm5W/RMI+u/Vm7kFvXh34ac8+PMnfFq8kio3TUo6JF0bVypMTSNmWMQ0HUszOLJDT/7a8xj2atMp43Gqo0h3RhoYf9mVWIbJnTfdQkV5BclEwlsMpCQ3P5+83LxsaTNTXH/o0KHsW3ggEyfcxezZs/n+h+9JVFYFxGIYBvlNmtC5c2dGnHkWF154IXl5eXUWft8Utm0zYMAAxo0bx5gxY3hvzgdsKCsnlUp5Uq9pEsvL5dCBAxl/0z/o1+uAjbluO1qYUPUIA/VfZlFVGe0nX0HEjDQow1UXGsl0Fa8cdgkn7913q7dy8++j8wNjWGWmwdDQlJeh7ToOD/Ycwuh+x+EaIrDZNER9E8ArX37IiBkPYuXnUm7Vr6i5n4/VKprLolNuolkkXu9n9H9nS5f1qcrMfkfevduOQxMrTl4999wODINASaI0ox960bA5kSj5Rqze/V7qJJg/52Pmf/ZZIDG1atmK3v370Kv7XtR3aBZVlgbJfJ4bV9Em3gR9MxuoCeEFza1NVGBoBgKFIxURTadlPH+z/VCjvyV8sOprVtsb+Lb8ZyrsJM0jOXTMbUG3SFN6t+iIWc2LVP/35Y3BtYkKPpz9Piu/WY4jXWKRCHvu35vCg/sQN60635cC3vv4Q5bM/4JEMolCEYtEKTxsIL/Zp9fGvq1lm11/FwRHwMgLz+PZR5/AtCzsdJpIJMIjjzzC2WefDcDyNT/x6XtzKVq1CqUUTfOb0KvwQA7ed79ffCHdaWw01BHBunFCe25MoaBJlaIqB2wNdDSEYTBm8VQQgtF9j8MxFXo1sqntGjvDtrL+HZiaTutY/hZtMfV6qUrRNtZ0q+9JSklTI8YRhx/OEYcfXssPFErU757a5dT/Pvz2YrpFx9wWDeqH6oXQVMZfPbDj3nU/p78rZAMWPr8ucotYHiccOxiObdj78j07h/c9hMP7HlKbDr0xFmkrxqd/3XQ6Tfc2Heg+bFjNS2xhF9BdlmhEDWPfFohJeLV/o2lIxzZu+K6bJpcvmhp4o6ShAjWqodf4tew0tenfouGjrWZbgnonCmqa5k1YmZ3IJ4S3IZvWgL2kVD0WkO15nkAEr1kqtZF4MjKLEP5vxFbvZVQ9ybH6fVbfibOuvvUJR22ynZB//vYYpb7hd9OdMGtNht3ViGZ71O/N2j5DZK9OutDANLhy8VQ04MJDBtfb3C12Ailne157W9sSbCSVX+M+tkdfeGNF7JBsWt/Qui1EwA6e8Nt6j42WaFKugy290GhRi/5ZL7G+DtuQX7bRNQwuXTwFUIwq/H29yhP6OvovkacTIsTuhl+EaKSS6EaEqxa8woMr56I7CrPKZmu2I1JA2nW8OAVR04Qn/Sr0usHor1/lhZ8WEFcaTj2yKnU0NjgpYmYka7vVECFCNAKiURkxtihRxo+J9Zg2NKtSW72pmyV0UoagMirQZW3XU2gINE1nVsVKmlQpLId6EZtAEBEatgoHR4idG7quY5qmV+Ijs8Plr2F/2elUJ00IdGGgm5COb33RcFuBqym0eggdpm6QzAWRrv/10kph7yKFskLsuigvK/e2xM0EM9q2TTKRCIkGPG+CIyAd2bZ2BPUsZKUUEqiINLT1Xa+GTYjGj6DgOYqhw0+lc7cumJaFdBx0y6R34UHeor6TSTa/mntbU7v29UKE2KFqE4KzThzKWScOrX28h0QTIkSI7asm1BDIQ9UpRIgQ25Nj/DARBdu8d0NINCFChKgFG6ll53ZdaOGrChEiREg0IUKECIkmRIgQIbY70WgiDGPbvL4cIkSIbSYaqRTSsXeKOi4hyYQI0XjQIK9T3LDo3rwDP1au8/ayUWEUnJ/H5RcrCkk4RIitlGgyG1zQLBJnfO9jSaUSXv1wvDKacjc93AzRpqWLnUpwWc8jyTUjmXKPIUKEaLBEIxBIFMN7FLI6Uc6/Fr8b1C9V7J6SjRCCtOPQOb8lY/Y+jJF7DsAQoX09RIgac0Vtpf6zNrkh7D28yExLM8i3YmFnhAixvYhma3cw2B1sNYR9EyLEtqlObDKRQjNw7f0SIkSI7UA04cQKESJEQxFaLkOECBESTYgQIUKiCREiRIiQaEKECBESTYgQIUKiCREiRIiQaEKECBESTYgQIULA/wOKaYanZEKpvwAAAABJRU5ErkJggg=="><h1 class="logo">Prompt <span>Arena</span></h1></div><div class="tag">host console</div></div>
   <main id="app"></main>
@@ -157,6 +193,7 @@ function newSession(){
   k2.onkeydown=e=>{if(e.key==='Enter')run();};
 }
 document.getElementById('newsession').onclick=newSession;
+document.getElementById('pastlink').onclick=screenRounds;
 
 const CLEANUP_CMD = 'npx wrangler d1 execute prompt-arena --remote --command="UPDATE submissions SET image_b64 = NULL WHERE round_id NOT IN (SELECT id FROM rounds ORDER BY created_at DESC LIMIT 3)"';
 
@@ -191,6 +228,136 @@ async function paintStorage(){
     <br>D1 keeps 30 days of history, so the reported size falls a month after you run it.`;
 }
 
+let arch = { status: 'all', page: 0 };
+
+const when = (t) => t ? new Date(t * 1000).toLocaleString(undefined,
+  { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
+
+async function screenRounds(){
+  gen++; view = 'rounds'; clearInterval(timer);
+  app.innerHTML = `<h2>Past rounds</h2>
+    <p class="lede">Every round ever run. Open one to see its full leaderboard, the hidden prompt and the verdict.</p>
+    <div class="tabs" id="tabs"></div>
+    <div id="list">Loading…</div>
+    <div class="row"><button class="btn ghost" id="back">Back to the console</button></div>`;
+  document.getElementById('back').onclick = () => { gen++; view = ''; tick(); };
+  paintRounds();
+}
+
+async function paintRounds(){
+  const filters = [['all','All'],['published','Completed'],['aborted','Aborted'],['closed','Not scored'],['draft','Never started']];
+  const tabs = document.getElementById('tabs');
+  if (tabs) {
+    tabs.innerHTML = filters.map(([k,l]) =>
+      `<button class="tab ${arch.status===k?'on':''}" data-f="${k}">${l}</button>`).join('');
+    tabs.querySelectorAll('[data-f]').forEach(b => b.onclick = () => {
+      arch = { status: b.dataset.f, page: 0 }; paintRounds();
+    });
+  }
+
+  const box = document.getElementById('list');
+  if (!box) return;
+  let d;
+  try { d = await api(`/api/admin/rounds?status=${arch.status}&page=${arch.page}`); }
+  catch(e){ box.innerHTML = `<div class="err">${e.message}</div>`; return; }
+  if (view !== 'rounds') return;
+
+  if (!d.rounds.length) { box.innerHTML = '<p class="lede">Nothing here yet.</p>'; return; }
+
+  box.innerHTML = `<div class="rows">${d.rounds.map(r => `
+      <div class="row2" data-round="${r.id}">
+        <span class="when">${when(r.createdAt)}</span>
+        <span class="pill ${r.status}">${r.status}</span>
+        <span class="meta">${r.entries} ${r.entries===1?'entry':'entries'}${r.winner?` &nbsp;·&nbsp; won by <b style="color:var(--text)">${r.winner}</b>`:''}</span>
+      </div>`).join('')}</div>
+    <div class="pager">
+      <button class="btn ghost" id="prev" ${arch.page===0?'disabled':''}>Newer</button>
+      <span>Page ${arch.page+1} of ${Math.max(1,d.pages)} &nbsp;·&nbsp; ${d.total} total</span>
+      <button class="btn ghost" id="next" ${arch.page+1>=d.pages?'disabled':''}>Older</button>
+    </div>`;
+  document.getElementById('prev').onclick = () => { arch.page--; paintRounds(); };
+  document.getElementById('next').onclick = () => { arch.page++; paintRounds(); };
+  box.querySelectorAll('[data-round]').forEach(el =>
+    el.onclick = () => screenOneRound(el.dataset.round));
+}
+
+async function screenOneRound(id){
+  gen++; view = 'round:' + id; clearInterval(timer);
+  app.innerHTML = '<p class="lede">Loading…</p>';
+  let d;
+  try { d = await api('/api/admin/round?id=' + encodeURIComponent(id)); }
+  catch(e){ app.innerHTML = `<div class="err">${e.message}</div>`; return; }
+  if (view !== 'round:' + id) return;
+
+  app.innerHTML = `<h2>${when(d.round.createdAt)}</h2>
+    <p class="lede"><span class="pill ${d.round.status}">${d.round.status}</span> &nbsp; ${d.board.length} ${d.board.length===1?'entry':'entries'}${d.round.judgedAt?` &nbsp;·&nbsp; scored ${when(d.round.judgedAt)}`:''}</p>
+    <div class="secret"><b>Hidden prompt</b>${d.round.secretPrompt||'—'}</div>
+    ${d.round.verdict?`<div class="note" style="margin-bottom:22px"><b>Verdict</b><br>${d.round.verdict}</div>`:''}
+    ${d.board.map(r => `
+      <div class="bd">
+        <span class="rk">${r.rank}</span>
+        <div class="th${r.hasImage?'':' none'}" ${r.hasImage?`data-img="${r.id}"`:''} id="th_${r.id}">${r.hasImage?'':'no image'}</div>
+        <div>
+          <div class="nm">${r.name}${r.id===d.round.winnerId?' &nbsp;🏆':''}</div>
+          <p class="pr">${r.prompt}</p>
+          ${r.notes?`<p class="nt">${r.notes}</p>`:''}
+          <div class="facts">
+            <span>submitted <b>${when(r.submittedAt)}</b></span>
+            <span>edits <b>${r.edits}</b></span>
+            <span>tab switches <b>${r.blurCount}</b></span>
+          </div>
+        </div>
+        <div class="scwrap">
+          <span class="sc">${r.score}</span>
+          ${(r.switchPenalty||r.idlePenalty)?`<span class="neg">${r.rawScore} &minus; ${r.rawScore - r.score}</span>`:''}
+          <br><button class="why" data-tip2="${r.id}" aria-label="How this score was worked out">?</button>
+          <div class="tip2" id="t2_${r.id}">
+            <b>How this score was worked out</b><hr>
+            Judge's score <b>${r.rawScore}</b><br>
+            <span style="opacity:.8">subject 35, setting 20, style 20, light and mood 15, composition 10</span>
+            ${r.switchPenalty?`<hr>${r.blurCount} ${r.blurCount===1?'switch':'switches'} away <span class="n">&minus;${r.switchPenalty}</span><br><span style="opacity:.8">${d.blurPenalty} points each</span>`:''}
+            ${r.idlePenalty?`<hr>Time spent away <span class="n">&minus;${r.idlePenalty}</span><br><span style="opacity:.8">${d.blurPenalty} points per 15 seconds beyond the first minute</span>`:''}
+            ${(r.switchPenalty + r.idlePenalty) > (r.rawScore - r.score)
+              ? `<hr><span style="opacity:.8">Penalties came to ${r.switchPenalty + r.idlePenalty}, capped at ${r.rawScore - r.score} so the score cannot fall below zero.</span>`
+              : ''}
+            <hr>Final <b>${r.score}</b>
+          </div>
+        </div>
+      </div>`).join('') || '<p class="lede">No entries.</p>'}
+    <div class="row"><button class="btn ghost" id="back">Back to past rounds</button></div>`;
+  document.getElementById('back').onclick = () => screenRounds();
+
+  // Thumbnails load one by one so a hundred-row round does not fire a hundred
+  // requests at once.
+  (async () => {
+    for (const r of d.board) {
+      if (!r.hasImage || view !== 'round:' + id) continue;
+      try {
+        const img = await (await fetch('/api/image?kind=sub&id=' + r.id)).json();
+        const cell = document.getElementById('th_' + r.id);
+        if (cell && img.b64) {
+          cell.innerHTML = `<img alt="" src="data:image/jpeg;base64,${img.b64}">`;
+          imgCache['sub:' + r.id] = img.b64;
+        }
+      } catch { /* leave the placeholder */ }
+    }
+  })();
+
+  app.onclick = (e) => {
+    const z = e.target.closest && e.target.closest('[data-img]');
+    if (z && imgCache['sub:' + z.dataset.img]) {
+      const w = window.open('', '_blank');
+      if (w) w.document.write(`<img style="max-width:100%" src="data:image/jpeg;base64,${imgCache['sub:' + z.dataset.img]}">`);
+      return;
+    }
+    const why = e.target.closest && e.target.closest('[data-tip2]');
+    const open = document.querySelector('.tip2.open');
+    const target = why && document.getElementById('t2_' + why.dataset.tip2);
+    if (open && open !== target) open.classList.remove('open');
+    if (target) target.classList.toggle('open');
+  };
+}
+
 function screenHome(s){
   if(view==='home')return; view='home'; clearInterval(timer);
   const state = s.round ? (ROUND_LABEL[s.round.status] || 'a round is in progress') : 'nothing has been set up yet';
@@ -199,24 +366,31 @@ function screenHome(s){
     <p class="lede">This is where rounds are generated, opened and scored. Right now, ${state}.</p>
     <div class="row">
       <button class="btn" id="go">${s.round?'Go to the current round':'Set up the first round'}</button>
+      <button class="btn ghost" id="past">Past rounds</button>
       ${s.round?'<button class="btn ghost" id="fresh">Start a new session</button>':''}
     </div>
     <div class="err" id="err"></div>
     <div class="note" id="storage">Checking storage…</div>
   </div>`;
   paintStorage();
-  document.getElementById('go').onclick=async e=>{
-    if(!s.round){ busy(e.target,'Rendering…');
-      try{await api('/api/admin/generate',{});}catch(err){document.getElementById('err').textContent=err.message;done(e.target);return;}
+  document.getElementById('go').onclick=e=>{
+    if(!s.round){
+      return withWork('Rendering the question',
+        'Inventing a random prompt and generating the image. This takes a few seconds.',
+        async()=>{ landed=true; await api('/api/admin/generate',{}); });
     }
+    // One state fetch away, so say something rather than look unclicked.
+    busy(e.target,'Opening…');
     landed=true; view=''; tick();
   };
+  document.getElementById('past').onclick=screenRounds;
   const f=document.getElementById('fresh'); if(f) f.onclick=newSession;
 }
 
 function screenLock(msg){
   gen++; view='lock';clearInterval(timer);landed=false;
   document.getElementById('newsession').hidden=true;
+  document.getElementById('pastlink').hidden=true;
   app.innerHTML=`<div class="card"><h2>Host access</h2>
     <p class="lede">Enter the admin key you set when deploying.</p>
     <input type="password" id="k" placeholder="Admin key">
@@ -238,11 +412,10 @@ function screenEmpty(){
     <p class="lede">Generating a round invents a random hidden prompt and renders it. Nobody sees the prompt — only the image.</p>
     <button class="btn" id="gen">Generate round</button>
     <div class="err" id="err"></div>${shareLine()}</div>`;
-  document.getElementById('gen').onclick=async e=>{
-    busy(e.target,'Rendering…');
-    try{await api('/api/admin/generate',{});view='';tick();}
-    catch(err){document.getElementById('err').textContent=err.message;done(e.target);}
-  };
+  document.getElementById('gen').onclick=()=>withWork(
+    'Rendering the question',
+    'Inventing a random prompt and generating the image. This takes a few seconds.',
+    ()=>api('/api/admin/generate',{}));
 }
 
 function screenDraft(s){
@@ -262,11 +435,10 @@ function screenDraft(s){
     try{await api('/api/admin/start',{});view='';tick();}
     catch(err){document.getElementById('err').textContent=err.message;done(e.target);}
   };
-  document.getElementById('again').onclick=async e=>{
-    busy(e.target,'Rendering…');
-    try{await api('/api/admin/discard',{});await api('/api/admin/generate',{});view='';tick();}
-    catch(err){document.getElementById('err').textContent=err.message;done(e.target);}
-  };
+  document.getElementById('again').onclick=()=>withWork(
+    'Rendering a new image',
+    'Throwing away the current one and generating a fresh question. This takes a few seconds.',
+    async()=>{ await api('/api/admin/discard',{}); await api('/api/admin/generate',{}); });
 }
 
 function screenLive(s,skew){
@@ -299,9 +471,33 @@ function screenLive(s,skew){
 }
 
 let rendering=false;
+let working=false;   // an operation owns the screen; the poll must not repaint
+
+/**
+ * Runs a slow operation behind its own screen. Without this the poll lands
+ * mid-flight — after a discard but before the new image exists — and repaints
+ * "No round yet" over the button for a couple of seconds.
+ */
+async function withWork(title, sub, fn){
+  gen++; working=true; view='working'; clearInterval(timer);
+  app.innerHTML=`<h2>${title}</h2>
+    <p class="lede">${sub}</p>
+    <div class="big"><span class="dotpulse">•</span></div>
+    <div class="err" id="err"></div>`;
+  let failed=null;
+  try{ await fn(); }catch(e){ failed=e.message; }
+  working=false;
+  if(failed){
+    const box=document.getElementById('err');
+    if(box) box.textContent=failed;
+    setTimeout(()=>{ view=''; tick(); }, 2500);
+    return;
+  }
+  view=''; tick();
+}
 
 async function renderLoop(){
-  if(rendering)return; rendering=true;
+  if(rendering)return; rendering=true; gen++;
   const err=document.getElementById('err');
   try{
     for(;;){
@@ -363,7 +559,7 @@ function screenClosed(s){
   document.getElementById('judge').onclick=async ()=>{
     // Scoring runs several calls back to back, so it gets its own screen rather
     // than a button that looks stuck for half a minute.
-    view='scoring'; clearInterval(timer);
+    gen++; view='scoring'; clearInterval(timer);
     app.innerHTML=`<h2>Scoring the entries</h2>
       <p class="lede">Every prompt is being read against the hidden one and ranked, in batches of 25, then the best are compared to pick the winner. This takes up to a minute for a full room. Leave this page open.</p>
       <div class="big"><span class="dotpulse">•</span> ${s.entries} ${s.entries===1?'entry':'entries'}</div>
@@ -376,11 +572,10 @@ function screenClosed(s){
       setTimeout(()=>{ view=''; tick(); }, 2500);
     }
   };
-  document.getElementById('next').onclick=async e=>{
-    busy(e.target,'Rendering…');
-    try{await api('/api/admin/generate',{});view='';tick();}
-    catch(err){document.getElementById('err').textContent=err.message;done(e.target);}
-  };
+  document.getElementById('next').onclick=()=>withWork(
+    'Rendering the question',
+    'Inventing a random prompt and generating the image. This takes a few seconds.',
+    ()=>api('/api/admin/generate',{}));
 }
 
 function screenPublished(s){
@@ -392,11 +587,10 @@ function screenPublished(s){
       <a class="btn ghost" href="/" style="text-decoration:none;display:inline-block">Open the results page</a>
     </div>
     <div class="err" id="err"></div></div>`;
-  document.getElementById('gen').onclick=async e=>{
-    busy(e.target,'Rendering…');
-    try{await api('/api/admin/generate',{});view='';tick();}
-    catch(err){document.getElementById('err').textContent=err.message;done(e.target);}
-  };
+  document.getElementById('gen').onclick=()=>withWork(
+    'Rendering the question',
+    'Inventing a random prompt and generating the image. This takes a few seconds.',
+    ()=>api('/api/admin/generate',{}));
 }
 
 async function tick(){
@@ -404,15 +598,19 @@ async function tick(){
   // at the top is not enough: a poll already waiting on its fetch would come
   // back and repaint over it, which is why this used to fail intermittently.
   if(view==='newsession')return;
-  if(rendering)return;          // the render loop owns the screen while it runs
+  if(rendering||working)return; // the render loop and slow operations own the screen
   if(view==='scoring')return;   // and so does scoring
+  if(view==='rounds'||view.startsWith('round:'))return;   // and the archive
   if(!key){if(view!=='lock')screenLock();return;}
   const mine=gen;
   let s;
   try{s=await api('/api/admin/state');}
   catch(e){ if(/admin key/i.test(e.message)){sessionStorage.removeItem('pa_key');key='';screenLock(e.message);} return; }
-  if(mine!==gen||view==='newsession')return;   // the operator took the screen while we waited
+  // The operator may have taken the screen while we were waiting on the network.
+  if(mine!==gen||rendering||working||view==='newsession'||view==='scoring'
+     ||view==='rounds'||view.startsWith('round:'))return;
   document.getElementById('newsession').hidden=false;
+  document.getElementById('pastlink').hidden=false;
   if(!landed)return screenHome(s);
   if(!s.round)return screenEmpty();
   const skew=s.round.serverTime-Math.floor(Date.now()/1000);

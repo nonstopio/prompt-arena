@@ -166,6 +166,25 @@ const MAX_EDITS = Infinity;
 // ten is the safe ceiling.
 const RENDER_BATCH = 10;
 
+// Points deducted per trip away from the tab during a live round. The final
+// score is floored at zero, so interruptions can never push anyone negative.
+const BLUR_PENALTY = 5;
+
+// Trips away from the tab: the first warns, the second costs the image for the
+// round, the third submits whatever they have and locks it.
+const BLUR_HIDE_FOREVER = 2;
+const BLUR_LOCK_ENTRY = 3;
+
+// A long absence costs more than a glance. Nothing extra for the first minute,
+// then five points for every fifteen seconds beyond it. Timed on the server
+// clock, so the page cannot under-report it.
+const AWAY_GRACE = 60;
+const AWAY_STEP = 15;
+const AWAY_STEP_PENALTY = 5;
+
+const awayCost = (seconds) =>
+  Math.max(0, Math.floor((Math.max(0, seconds) - AWAY_GRACE) / AWAY_STEP)) * AWAY_STEP_PENALTY;
+
 // A short window past the deadline so a browser's automatic submit still lands.
 const GRACE = 20;
 
@@ -375,8 +394,22 @@ Reply with ONLY a JSON object, no prose before or after:
 }
 
 async function judgeRound(env, round) {
+  // Anyone who never came back is charged up to the moment entries closed.
+  await env.DB.prepare(
+    'UPDATE players SET away_penalty = away_penalty + ' +
+    'MAX(0, ((MIN(?, ?) - away_since) - ?) / ?) * ?, away_since = NULL ' +
+    'WHERE round_id = ? AND away_since IS NOT NULL'
+  ).bind(
+    Number(round.ends_at) || now(), now(),
+    AWAY_GRACE, AWAY_STEP, AWAY_STEP_PENALTY, round.id
+  ).run();
+
   const { results: subs } = await env.DB.prepare(
-    'SELECT id, player_name, prompt FROM submissions WHERE round_id = ? ORDER BY created_at ASC'
+    'SELECT s.id, s.player_name, s.prompt, COALESCE(p.blur_count, 0) AS blur_count, ' +
+    'COALESCE(p.away_penalty, 0) AS away_penalty, p.away_since ' +
+    'FROM submissions s LEFT JOIN players p ' +
+    'ON p.round_id = s.round_id AND p.name_key = s.name_key ' +
+    'WHERE s.round_id = ? ORDER BY s.created_at ASC'
   ).bind(round.id).all();
 
   if (!subs.length) throw new Error('No entries to judge.');
@@ -400,28 +433,64 @@ async function judgeRound(env, round) {
 
   if (!scored.size) throw new Error('The judge scored none of the entries. Try again.');
 
-  const statements = subs.map((sub) => {
+  // Penalties are re-read now the judge has finished. The earlier read is up to
+  // a minute old by this point, and anything that happened in between would
+  // otherwise show on the results page without ever reaching the score.
+  const { results: fresh } = await env.DB.prepare(
+    'SELECT name_key, blur_count, away_penalty FROM players WHERE round_id = ?'
+  ).bind(round.id).all();
+  const penalties = new Map(fresh.map((p) => [p.name_key, p]));
+
+  const keyOf = await env.DB.prepare(
+    'SELECT id, name_key FROM submissions WHERE round_id = ?'
+  ).bind(round.id).all();
+  const subKey = new Map(keyOf.results.map((x) => [x.id, x.name_key]));
+
+  // The judge's score, less five points per trip away from the tab and the cost
+  // of any long absence, floored at zero. Both numbers are kept so the board can
+  // show the arithmetic.
+  const finals = new Map();
+  for (const sub of subs) {
     const hit = scored.get(sub.id);
-    return env.DB.prepare('UPDATE submissions SET score = ?, notes = ? WHERE id = ?').bind(
-      hit ? hit.score : 0,
-      hit ? hit.notes : 'Not scored by the judge.',
-      sub.id
-    );
+    const raw = hit ? hit.score : 0;
+    const p = penalties.get(subKey.get(sub.id)) || {};
+    const switches = Number(p.blur_count) || 0;
+    const idle = Number(p.away_penalty) || 0;
+    finals.set(sub.id, {
+      id: sub.id,
+      raw,
+      switches,
+      score: Math.max(0, raw - switches * BLUR_PENALTY - idle),
+      notes: hit ? hit.notes : 'Not scored by the judge.',
+    });
+  }
+
+  const statements = subs.map((sub) => {
+    const f = finals.get(sub.id);
+    return env.DB.prepare(
+      'UPDATE submissions SET score = ?, raw_score = ?, notes = ? WHERE id = ?'
+    ).bind(f.score, f.raw, f.notes, sub.id);
   });
 
-  const ranked = [...scored.values()].sort((a, b) => b.score - a.score);
+  // Rank on the penalised score; a tie goes to whoever stayed on the tab, and
+  // then to whoever submitted first.
+  const ranked = [...finals.values()].sort((a, b) =>
+    b.score - a.score || a.switches - b.switches || 0);
   const topScore = ranked[0].score;
 
   let winnerId = null;
   let verdict = 'No prompt scored above zero this round, so there is no winner. Every entry is listed below with what it produced and where it went wrong.';
 
   if (topScore > 0) {
-    const finalists = ranked.slice(0, 8).map((r) => ({ ...r, prompt: byId.get(r.id).prompt }));
+    const finalists = ranked.slice(0, 8)
+      .filter((r) => r.score > 0)
+      .map((r) => ({ ...r, prompt: byId.get(r.id).prompt }));
     const chosen = finalists.length > 1
       ? await pickWinner(env, round, finalists)
       : { winnerId: finalists[0].id, verdict: '' };
 
-    winnerId = scored.has(chosen.winnerId) ? chosen.winnerId : ranked[0].id;
+    // The model may name any finalist; it must still be one of them.
+    winnerId = finalists.some((f) => f.id === chosen.winnerId) ? chosen.winnerId : ranked[0].id;
     verdict = String(chosen.verdict || '').trim().slice(0, 2000)
       || 'This prompt scored highest against the hidden prompt across every part of the rubric.';
   }
@@ -477,14 +546,21 @@ export default {
         let mine = null;
         let myEndsAt = null;
         let draft = '';
+        let mySwitches = 0;
+        let myIdlePenalty = 0;
         if (nameKey) {
           mine = await env.DB.prepare(
             'SELECT id, prompt, edits FROM submissions WHERE round_id = ? AND name_key = ?'
           ).bind(round.id, nameKey).first();
           const seat = await env.DB.prepare(
-            'SELECT joined_at, draft FROM players WHERE round_id = ? AND name_key = ?'
+            'SELECT joined_at, draft, blur_count, away_penalty FROM players WHERE round_id = ? AND name_key = ?'
           ).bind(round.id, nameKey).first();
-          if (seat) { myEndsAt = Number(round.ends_at) || null; draft = seat.draft || ''; }
+          if (seat) {
+            myEndsAt = Number(round.ends_at) || null;
+            draft = seat.draft || '';
+            mySwitches = Number(seat.blur_count) || 0;
+            myIdlePenalty = Number(seat.away_penalty) || 0;
+          }
         }
         const count = await env.DB.prepare(
           'SELECT COUNT(*) AS n FROM submissions WHERE round_id = ?'
@@ -499,6 +575,13 @@ export default {
           entries: count?.n || 0,
           myEndsAt,
           draft,
+          mySwitches,
+          myIdlePenalty,
+          awayGrace: AWAY_GRACE,
+          awayStep: AWAY_STEP,
+          lockAt: BLUR_LOCK_ENTRY,
+          hideAt: BLUR_HIDE_FOREVER,
+          penalty: BLUR_PENALTY,
           sessionAborted,
           players: roster.map((r) => ({ name: r.name, done: Boolean(r.done) })),
           mine: mine ? { id: mine.id, prompt: mine.prompt, edits: Number(mine.edits) || 0 } : null,
@@ -545,9 +628,32 @@ export default {
         const round = await currentRound(env);
         if (!round || round.status !== 'live') return json({ ok: true });
         await env.DB.prepare(
-          'UPDATE players SET blur_count = blur_count + 1 WHERE round_id = ? AND name_key = ?'
-        ).bind(round.id, nameKey).run();
+          'UPDATE players SET blur_count = blur_count + 1, away_since = ? ' +
+          'WHERE round_id = ? AND name_key = ?'
+        ).bind(now(), round.id, nameKey).run();
         return json({ ok: true });
+      }
+
+      // Returning stops it. The cost of the absence is worked out here, from the
+      // server's own clock rather than anything the page reports.
+      if (path === '/api/back' && request.method === 'POST') {
+        const { name } = await request.json();
+        const nameKey = String(name || '').trim().toLowerCase();
+        if (!nameKey) return fail('No name.');
+        const round = await currentRound(env);
+        if (!round || round.status !== 'live') return json({ ok: true, seconds: 0, cost: 0 });
+        const seat = await env.DB.prepare(
+          'SELECT away_since FROM players WHERE round_id = ? AND name_key = ?'
+        ).bind(round.id, nameKey).first();
+        if (!seat || !seat.away_since) return json({ ok: true, seconds: 0, cost: 0 });
+
+        const seconds = Math.max(0, now() - Number(seat.away_since));
+        const cost = awayCost(seconds);
+        await env.DB.prepare(
+          'UPDATE players SET away_since = NULL, away_penalty = away_penalty + ? ' +
+          'WHERE round_id = ? AND name_key = ?'
+        ).bind(cost, round.id, nameKey).run();
+        return json({ ok: true, seconds, cost });
       }
 
       if (path === '/api/image') {
@@ -590,9 +696,12 @@ export default {
 
         const nameKey = cleanName.toLowerCase();
         const seat = await env.DB.prepare(
-          'SELECT joined_at FROM players WHERE round_id = ? AND name_key = ?'
+          'SELECT joined_at, blur_count FROM players WHERE round_id = ? AND name_key = ?'
         ).bind(round.id, nameKey).first();
         if (!seat) return fail('You have not joined this round. Reload the page.');
+        if ((Number(seat.blur_count) || 0) >= BLUR_LOCK_ENTRY) {
+          return fail(`You left the tab ${BLUR_LOCK_ENTRY} times, so entries are closed for you.`);
+        }
         const limit = Number(round.ends_at) + (auto ? GRACE : 0);
         if (now() >= limit) return fail('Time is up.');
         const existing = await env.DB.prepare(
@@ -629,11 +738,14 @@ export default {
 
         const nameKey = cleanName.toLowerCase();
         const seat = await env.DB.prepare(
-          'SELECT joined_at FROM players WHERE round_id = ? AND name_key = ?'
+          'SELECT joined_at, blur_count FROM players WHERE round_id = ? AND name_key = ?'
         ).bind(round.id, nameKey).first();
         if (!seat) return fail('You have not joined this round. Reload the page.');
         if (now() >= Number(round.ends_at)) {
           return fail('Time is up — this entry is locked.');
+        }
+        if ((Number(seat.blur_count) || 0) >= BLUR_LOCK_ENTRY) {
+          return fail(`Your entry was locked after ${BLUR_LOCK_ENTRY} tab switches.`);
         }
 
         const existing = await env.DB.prepare(
@@ -660,11 +772,12 @@ export default {
           return json({ round: publicRound(round), published: false });
         }
         const { results } = await env.DB.prepare(
-          'SELECT s.id, s.player_name, s.prompt, s.score, s.notes, ' +
-          's.image_b64 IS NOT NULL AS has_image, COALESCE(p.blur_count, 0) AS blur_count ' +
+          'SELECT s.id, s.player_name, s.prompt, s.score, s.raw_score, s.notes, ' +
+          's.image_b64 IS NOT NULL AS has_image, COALESCE(p.blur_count, 0) AS blur_count, ' +
+          'COALESCE(p.away_penalty, 0) AS away_penalty ' +
           'FROM submissions s LEFT JOIN players p ' +
           'ON p.round_id = s.round_id AND p.name_key = s.name_key ' +
-          'WHERE s.round_id = ? ORDER BY s.score DESC, s.created_at ASC'
+          'WHERE s.round_id = ? ORDER BY s.score DESC, blur_count ASC, s.created_at ASC'
         ).bind(round.id).all();
         return json({
           round: publicRound(round),
@@ -672,12 +785,17 @@ export default {
           secretPrompt: round.secret_prompt,
           verdict: round.verdict,
           winnerId: round.winner_id,
+          blurPenalty: BLUR_PENALTY,
           board: results.map((r, i) => ({
             rank: i + 1,
             id: r.id,
             name: r.player_name,
             prompt: r.prompt,
             score: r.score,
+            rawScore: r.raw_score === null ? r.score : r.raw_score,
+            penalty: Math.max(0, (Number(r.raw_score) || 0) - (Number(r.score) || 0)),
+            switchPenalty: (Number(r.blur_count) || 0) * BLUR_PENALTY,
+            idlePenalty: Number(r.away_penalty) || 0,
             notes: r.notes,
             hasImage: Boolean(r.has_image),
             blurCount: Number(r.blur_count) || 0,
@@ -742,6 +860,81 @@ export default {
 
         // Summing image sizes scans every row, so the console asks for this
         // once when it opens rather than on every poll.
+        // Every round ever run, newest first, optionally filtered by status.
+        if (path === '/api/admin/rounds') {
+          const status = url.searchParams.get('status') || 'all';
+          const page = Math.max(0, Number(url.searchParams.get('page')) || 0);
+          const per = 10;
+
+          const where = status === 'all' ? '' : 'WHERE r.status = ?';
+          const args = status === 'all' ? [] : [status];
+
+          const total = await env.DB.prepare(
+            `SELECT COUNT(*) AS n FROM rounds r ${where}`
+          ).bind(...args).first();
+
+          const { results } = await env.DB.prepare(
+            'SELECT r.id, r.status, r.created_at, r.started_at, r.judged_at, r.winner_id, ' +
+            '(SELECT COUNT(*) FROM submissions s WHERE s.round_id = r.id) AS entries, ' +
+            '(SELECT s.player_name FROM submissions s WHERE s.id = r.winner_id) AS winner ' +
+            `FROM rounds r ${where} ORDER BY r.created_at DESC LIMIT ? OFFSET ?`
+          ).bind(...args, per, page * per).all();
+
+          return json({
+            page, per,
+            total: Number(total?.n) || 0,
+            pages: Math.ceil((Number(total?.n) || 0) / per),
+            rounds: results.map((r) => ({
+              id: r.id,
+              status: r.status,
+              createdAt: Number(r.created_at) || null,
+              startedAt: Number(r.started_at) || null,
+              judgedAt: Number(r.judged_at) || null,
+              entries: Number(r.entries) || 0,
+              winner: r.winner || null,
+            })),
+          });
+        }
+
+        // One past round in full, whatever its status.
+        if (path === '/api/admin/round') {
+          const id_ = url.searchParams.get('id');
+          const r = await env.DB.prepare('SELECT * FROM rounds WHERE id = ?').bind(id_).first();
+          if (!r) return fail('No such round.', 404);
+          const { results } = await env.DB.prepare(
+            'SELECT s.id, s.player_name, s.prompt, s.score, s.raw_score, s.notes, ' +
+            's.created_at, s.edits, ' +
+            's.image_b64 IS NOT NULL AS has_image, COALESCE(p.blur_count, 0) AS blur_count, ' +
+            'COALESCE(p.away_penalty, 0) AS away_penalty, COALESCE(p.joined_at, 0) AS joined_at ' +
+            'FROM submissions s LEFT JOIN players p ' +
+            'ON p.round_id = s.round_id AND p.name_key = s.name_key ' +
+            'WHERE s.round_id = ? ORDER BY s.score DESC, blur_count ASC, s.created_at ASC'
+          ).bind(id_).all();
+
+          return json({
+            round: {
+              id: r.id, status: r.status,
+              createdAt: Number(r.created_at) || null,
+              judgedAt: Number(r.judged_at) || null,
+              secretPrompt: r.secret_prompt,
+              verdict: r.verdict,
+              winnerId: r.winner_id,
+            },
+            blurPenalty: BLUR_PENALTY,
+            board: results.map((x, i) => ({
+              rank: i + 1, id: x.id, name: x.player_name, prompt: x.prompt,
+              score: x.score, rawScore: x.raw_score === null ? x.score : x.raw_score,
+              switchPenalty: (Number(x.blur_count) || 0) * BLUR_PENALTY,
+              idlePenalty: Number(x.away_penalty) || 0,
+              blurCount: Number(x.blur_count) || 0,
+              submittedAt: Number(x.created_at) || null,
+              joinedAt: Number(x.joined_at) || null,
+              edits: Number(x.edits) || 0,
+              notes: x.notes, hasImage: Boolean(x.has_image),
+            })),
+          });
+        }
+
         if (path === '/api/admin/storage') {
           const r = await env.DB.prepare(
             'SELECT (SELECT COUNT(*) FROM rounds) AS rounds, ' +

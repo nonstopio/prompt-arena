@@ -149,6 +149,26 @@ textarea{min-height:130px;line-height:1.6}
 .entry.win .rank{color:var(--amber)}
 .pname{font-weight:600}
 .pscore{margin-left:auto;font-family:var(--display);font-weight:700;font-size:22px;font-variant-numeric:tabular-nums}
+.pmath{font-family:var(--body);font-size:13px;font-weight:500;color:var(--muted);margin-left:auto}
+.pmath s{color:var(--muted);text-decoration:none;opacity:.8}
+.pmath em{color:var(--rose);font-style:normal}
+.why{
+  position:relative;display:inline-flex;align-items:center;justify-content:center;
+  width:18px;height:18px;border-radius:50%;border:1px solid var(--line);
+  color:var(--muted);font-size:11px;font-weight:600;margin-left:8px;cursor:help;
+  background:none;padding:0;
+}
+.why:hover,.why:focus{border-color:var(--amber);color:var(--amber)}
+.tip{
+  position:absolute;right:0;top:26px;z-index:30;width:250px;
+  background:var(--raise);border:1px solid var(--line);border-radius:10px;
+  padding:13px 15px;text-align:left;font-size:13px;line-height:1.65;color:#ddd6e6;
+  font-weight:400;box-shadow:0 12px 28px rgba(0,0,0,.45);display:none;cursor:auto;
+}
+.tip.open{display:block}
+.tip b{color:var(--text)}
+.tip .neg{color:var(--rose)}
+.tip hr{border:0;border-top:1px solid var(--line);margin:9px 0}
 .pprompt{margin:0 0 10px;color:#ddd6e6}
 .pnotes{margin:0;font-size:14px;color:var(--muted)}
 .crown{font-size:13px;color:var(--amber);font-weight:600}
@@ -205,7 +225,7 @@ textarea{min-height:130px;line-height:1.6}
     <div class="lbhead"><span class="lbname" id="lbname"></span><button class="btn ghost" id="lbx">Close</button></div>
     <div class="lbbody"><img id="lbimg" alt=""></div>
   </div>
-  <div style="text-align:center;color:var(--muted);font-size:11px;opacity:.5;margin-top:40px">build 20260921-1247</div>
+  <div style="text-align:center;color:var(--muted);font-size:11px;opacity:.5;margin-top:40px">build 20260923-1355</div>
   <div class="brandfoot"><img class="brand" alt="NonStop io Technologies" src="data:image/png;base64,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"></div>
 </div>
 
@@ -223,20 +243,28 @@ const mmss = s => Number.isFinite(s)
   : '--:--';
 
 function renderWho(){
+  // Start Over stays out of reach during a round — its only entry point is the
+  // abort screen, so nobody discards a live entry by misreading a header link.
   who.innerHTML = name
-    ? `Playing as <b>${esc(name)}</b> &nbsp;<button class="linkish" id="chg">Start Over</button>` : '';
+    ? `Playing as <b>${esc(name)}</b>${aborted ? ' &nbsp;<button class="linkish" id="chg">Start Over</button>' : ''}`
+    : '';
   const c = document.getElementById('chg');
   if (c) c.onclick = startOver;
 }
 
 /** Wipes this player's session so the next name begins from nothing. */
+/**
+ * Only reachable once the host has aborted the round, so there is nothing live
+ * left to lose and nothing to confirm. If Start Over is ever exposed during a
+ * running round, it needs a confirmation first, and a way to discard that
+ * player's entry on the server — neither of which exists any more.
+ */
 function startOver(){
   gen++;                // anything already in flight belongs to the old session
-  localStorage.removeItem('pa_name');
-  sessionStorage.removeItem('pa_round');
+  try { localStorage.clear(); sessionStorage.clear(); } catch {}
   name = '';
-  away = false; needsAck = false; blocked = false; awayCount = 0;
-  playing = false; imageReady = false; aborted = false;
+  away = false; needsAck = false; blocked = false; locked = false; awayCount = 0; returnReported = false;
+  playing = false; imageReady = false; aborted = false; entrySig = ''; seenRoundId = null;
   repaintTarget = null;
   targetCache = {};
   clearInterval(timer);
@@ -258,8 +286,13 @@ async function loadImage(kind, key, el, plain){
   if (!targetCache[ck]) {
     const q = kind === 'target' ? `&name=${encodeURIComponent(name)}` : '';
     try { targetCache[ck] = (await api(`/api/image?kind=${kind}&id=${key}${q}`)).b64; }
-    catch { el.innerHTML = '<div class="thumb none">no image</div>'; return; }
+    catch {
+      el.innerHTML = '<div class="thumb none">no image</div>';
+      if (kind === 'target' && !plain) imageReady = true;   // still hold them to the tab
+      return;
+    }
   }
+  if (kind === 'target' && !plain) imageReady = true;
   // Once results are out there is nothing left to protect, so show it whole.
   if (kind === 'target' && !plain) paintProtected(el, targetCache[ck]);
   else el.innerHTML = `<img alt="" src="data:image/jpeg;base64,${targetCache[ck]}">`;
@@ -303,7 +336,6 @@ function paintProtected(el, b64){
       else { ctx.drawImage(mark, 0, 0); }
     };
 
-    imageReady = true;
     el.querySelectorAll('canvas, .shimmer').forEach((n) => n.remove());
     el.insertBefore(c, el.firstChild);
     if (!el.querySelector('.guard')) {
@@ -327,20 +359,30 @@ let repaintTarget = null;   // redraws the question image on demand
 let needsAck = false;       // hidden after a trip away until they ask for it back
 let awayCount = 0;
 let blocked = false;        // a second trip away costs the image for the round
+let locked = false;         // a third submits the entry and closes it
+const HIDE_AT = 2, LOCK_AT = 3, PENALTY = 5;
 
 function guardMessage(){
-  if (away) return '<div>Image hidden while you are away from this tab.</div>';
+  if (away) return `<div>Image hidden while you are away from this tab.<br>
+    Past one minute away, this costs ${PENALTY} more points every 15 seconds.</div>`;
+  if (locked) {
+    return `<div><b>Your entry has been submitted and locked.</b><br>
+      That was ${awayCount} trips away from this tab. Whatever you had written has been
+      submitted for you and can no longer be changed.
+      <br>${awayCount * PENALTY} points have come off your score.</div>`;
+  }
   if (blocked) {
     return `<div><b>The image is hidden for the rest of this round.</b><br>
-      You were given one chance and left this tab again, so it will not come back.
-      You can still write and submit your prompt from what you remember, and it is scored
-      exactly like everyone else's.</div>`;
+      You were warned once and left again, so it will not come back. Write your prompt from
+      what you remember.
+      <br><b>Leave this tab once more and your entry is submitted and locked.</b>
+      That is ${awayCount * PENALTY} points off so far.</div>`;
   }
   return `<div><b>You switched away from this tab.</b><br>
-    In case that was an accident, here is one chance to carry on — click below and the image
-    comes straight back. Leave this tab again and it stays hidden for the rest of the round,
-    and you would have to finish from memory.
-    <br>Every trip away is counted next to your name on the results screen.
+    In case that was an accident, here is one chance — click below and the image comes
+    straight back. That is <b>${PENALTY} points</b> off already.
+    <br>Leave again and the image is gone for the round. Leave a third time and your entry
+    is submitted and locked where it stands.
     <br><button class="btn" id="unhide" style="margin-top:18px">Show the image</button></div>`;
 }
 
@@ -365,11 +407,17 @@ const setAway = v => {
   if (v && playing && imageReady) {
     awayCount++;
     needsAck = true;
-    if (awayCount >= 2) blocked = true;   // the first time was the warning
+    if (awayCount >= HIDE_AT) blocked = true;   // the first time was the warning
+    if (awayCount >= LOCK_AT && !locked) {
+      locked = true;
+      // Same path as the buzzer: whatever is in the box goes in as it stands.
+      autoSubmit().finally(() => { view = ''; tick(); });
+    }
   }
   applyGuard();
-  if (v && playing && imageReady && name) {
-    api('/api/flag',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({name})}).catch(()=>{});
+  if (playing && imageReady && name) {
+    const path = v ? '/api/flag' : '/api/back';
+    api(path,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({name})}).catch(()=>{});
   }
 };
 document.addEventListener('visibilitychange', () => setAway(document.hidden));
@@ -380,6 +428,8 @@ window.addEventListener('pagehide', () => setAway(true));
 // check is asking the document directly, a few times a second.
 // A tab opened in the background has not lost anything yet, so nothing counts
 // until the page has actually held focus once.
+let returnReported = false;   // a reload must close any absence left open
+let seenRoundId = null;       // per-round flags must not leak into the next one
 let everFocused = document.hasFocus();
 window.addEventListener('focus', () => { everFocused = true; });
 document.addEventListener('pointerdown', () => { everFocused = true; });
@@ -400,7 +450,7 @@ document.addEventListener('dragstart', e => {
 const RULES = `<ul class="rules">
   <li>Everyone gets the <b>same image</b> and the <b>same five minutes</b>, starting together when the host opens the round.</li>
   <li>Write the prompt you think produced that image. After the round, every prompt is turned into an image, so you will see exactly what yours makes.</li>
-  <li><b>One entry each</b>, and you can revise it as many times as you like until the clock runs out.</li>
+  <li><b>One entry each</b>, revised as often as you like until the clock runs out — unless the tab rule below locks it.</li>
   <li>Whatever is in the box at zero is <b>submitted for you</b> — you do not have to click anything.</li>
 </ul>`;
 
@@ -427,7 +477,15 @@ function screenName(){
     <p class="lede">Use the full name printed on your office ID card, so the leaderboard makes sense to everyone else. Everyone's clock starts together when the host opens the round.</p>
     <div class="callout"><b>Ignore the watermark.</b> The repeated “NonStop io Technologies” text across the image is not part of the picture. Do not describe it in your prompt.</div>
     ${RULES}
-    <div class="callout warn"><b>Stay on this tab.</b> Switching away hides the image and is counted. You get one chance to bring it back; after that it stays hidden for the round. The count appears next to your name on the results screen.</div>
+    <div class="callout warn"><b>Stay on this tab — before and after you submit.</b>
+      <br><b>Every switch away: &minus;5 points.</b> It keeps counting once your prompt is in.
+      <br><b>1st switch</b> — image hidden, one chance to bring it back.
+      <br><b>2nd switch</b> — image gone for the rest of the round.
+      <br><b>3rd switch</b> — your prompt is submitted as it stands and locked. No more edits, no way back.
+      <br><b>Away over 1 minute: &minus;5 more for every 15 seconds past the minute.</b>
+      <br><span style="opacity:.85">Example: away for 1 min 30 sec → &minus;5 for the switch, &minus;10 for the 30 seconds over = <b>&minus;15</b>.</span>
+      <br><b>Penalties follow your name for the whole round.</b> Refreshing changes nothing, and Start Over discards your prompt but keeps every deduction.
+      <br>Your count is shown next to your name on the results screen.</div>
     <label for="nm" style="margin-top:22px">Full name</label>
     <input type="text" id="nm" autocomplete="name" placeholder="e.g. Rushikesh Nere">
     <div class="err" id="err"></div>
@@ -470,7 +528,15 @@ function screenLobby(){
     </div>
     <div class="card"><div class="callout"><b>Ignore the watermark.</b> The repeated “NonStop io Technologies” text across the image is not part of the picture. Do not describe it in your prompt.</div>
     ${RULES}
-    <div class="callout warn"><b>Stay on this tab.</b> Switching away hides the image and is counted. You get one chance to bring it back; after that it stays hidden for the round. The count appears next to your name on the results screen.</div></div>` + ROSTER;
+    <div class="callout warn"><b>Stay on this tab — before and after you submit.</b>
+      <br><b>Every switch away: &minus;5 points.</b> It keeps counting once your prompt is in.
+      <br><b>1st switch</b> — image hidden, one chance to bring it back.
+      <br><b>2nd switch</b> — image gone for the rest of the round.
+      <br><b>3rd switch</b> — your prompt is submitted as it stands and locked. No more edits, no way back.
+      <br><b>Away over 1 minute: &minus;5 more for every 15 seconds past the minute.</b>
+      <br><span style="opacity:.85">Example: away for 1 min 30 sec → &minus;5 for the switch, &minus;10 for the 30 seconds over = <b>&minus;15</b>.</span>
+      <br><b>Penalties follow your name for the whole round.</b> Refreshing changes nothing, and Start Over discards your prompt but keeps every deduction.
+      <br>Your count is shown next to your name on the results screen.</div></div>` + ROSTER;
 }
 
 function screenWaiting(msg, sub){
@@ -491,7 +557,15 @@ function screenPlay(state){
       <h3 style="font-family:var(--display);font-size:19px;font-weight:700;margin:0 0 14px">How this works</h3>
       ${RULES}
       <div class="callout" style="margin-top:18px"><b>Ignore the watermark.</b> The repeated “NonStop io Technologies” text across the image is not part of the picture. Do not describe it in your prompt.</div>
-      <div class="callout warn" style="margin-bottom:0"><b>Stay on this tab.</b> Switching away hides the image and is counted. You get one chance to bring it back; after that it stays hidden for the round. The count appears next to your name on the results screen.</div>
+      <div class="callout warn" style="margin-bottom:0"><b>Stay on this tab — before and after you submit.</b>
+      <br><b>Every switch away: &minus;5 points.</b> It keeps counting once your prompt is in.
+      <br><b>1st switch</b> — image hidden, one chance to bring it back.
+      <br><b>2nd switch</b> — image gone for the rest of the round.
+      <br><b>3rd switch</b> — your prompt is submitted as it stands and locked. No more edits, no way back.
+      <br><b>Away over 1 minute: &minus;5 more for every 15 seconds past the minute.</b>
+      <br><span style="opacity:.85">Example: away for 1 min 30 sec → &minus;5 for the switch, &minus;10 for the 30 seconds over = <b>&minus;15</b>.</span>
+      <br><b>Penalties follow your name for the whole round.</b> Refreshing changes nothing, and Start Over discards your prompt but keeps every deduction.
+      <br>Your count is shown next to your name on the results screen.</div>
     </div>
     <div class="target" id="target"><div class="shimmer"></div><div class="guard"></div></div>
     <div class="card">
@@ -575,7 +649,7 @@ function screenSubmitted(state){
     if(t) t.innerHTML=`<b>${state.entries}</b> ${state.entries===1?'entry':'entries'} in`;
     // The count of remaining edits changes under us; refresh the panel when it
     // does, but never while they are mid-edit or we would wipe their typing.
-    const sig = state.mine.prompt;
+    const sig = state.mine.prompt + '|' + state.mySwitches + '|' + state.myIdlePenalty;
     if (sig !== entrySig && !document.getElementById('save')) paintEntry(state);
     return;
   }
@@ -583,7 +657,7 @@ function screenSubmitted(state){
   app.innerHTML = `
     <div class="clockrow">
       <div class="clock" id="clock">--:--</div>
-      <div class="clocklabel">Your entry is saved. Keep comparing against the image and revise as often as you like until the clock runs out.</div>
+      <div class="clocklabel">Your entry is saved. Keep comparing against the image and revise as often as you like until the clock runs out. <b style="color:var(--rose)">Stay on this tab — switching still costs 5 points each time, a third switch locks your entry, and being away over a minute costs 5 more every 15 seconds.</b></div>
     </div>
     <div class="target" id="target"><div class="shimmer"></div><div class="guard"></div></div>
     <div class="card" id="entrybox"></div>` + ROSTER;
@@ -594,15 +668,18 @@ function screenSubmitted(state){
 function paintEntry(state){
   const box = document.getElementById('entrybox');
   if (!box) return;
+  const shut = Number(state.mySwitches) >= LOCK_AT;
   box.innerHTML = `
     <label>Your prompt</label>
     <p class="pprompt" style="margin-top:4px" id="cur">${esc(state.mine.prompt)}</p>
     <div class="row" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
-      <button class="btn ghost" id="edit">Edit prompt</button>
+      ${shut ? '' : '<button class="btn ghost" id="edit">Edit prompt</button>'}
+      ${shut ? `<span class="tally" style="color:var(--rose)">Locked after ${state.mySwitches} tab switches</span>` : ''}
       <span class="tally" id="tally"><b>${state.entries}</b> ${state.entries===1?'entry':'entries'} in</span>
     </div>
+    ${(Number(state.mySwitches) || Number(state.myIdlePenalty)) ? `<div class="hint" style="color:var(--rose)">${state.mySwitches} ${state.mySwitches===1?'switch':'switches'} away so far — ${state.mySwitches * PENALTY} points${Number(state.myIdlePenalty)?`, plus ${state.myIdlePenalty} for time spent away`:''}. Switching still counts now that you have submitted.</div>` : ''}
     <div class="err" id="err"></div>`;
-  entrySig = state.mine.prompt;
+  entrySig = state.mine.prompt + '|' + state.mySwitches + '|' + state.myIdlePenalty;
   const e = document.getElementById('edit');
   if (e) e.onclick = () => editEntry(state);
 }
@@ -648,12 +725,28 @@ async function screenResults(){
     <div class="entry ${r.id===d.winnerId?'win':''}">
       <div class="thumb" id="th_${r.id}" data-zoom="sub:${r.id}" data-label="${esc(r.name)}">${r.hasImage?'<div class="shimmer"></div>':'<div class="thumb none">render blocked</div>'}</div>
       <div>
-        <div class="ehead">
+        <div class="ehead" style="position:relative">
           <span class="rank">${r.rank}</span>
           <span class="pname">${esc(r.name)}</span>
           ${r.id===d.winnerId?'<span class="crown">winner</span>':''}
           ${r.blurCount?`<span class="flag">left the tab ${r.blurCount}\u00d7</span>`:''}
-          <span class="pscore">${r.score}</span>
+          ${r.penalty
+            ? `<span class="pmath"><s>${r.rawScore}</s> &minus; <em>${r.penalty}</em> =</span><span class="pscore" style="margin-left:8px">${r.score}</span>`
+            : `<span class="pscore">${r.score}</span>`}
+          <button class="why" data-tip="${r.id}" aria-label="How this score was worked out">?</button>
+          <div class="tip" id="tip_${r.id}">
+            <b>How this score was worked out</b>
+            <hr>
+            Judge's score <b>${r.rawScore}</b><br>
+            <span style="opacity:.8">subject 35, setting 20, style 20, light and mood 15, composition 10</span>
+            ${r.switchPenalty ? `<hr>${r.blurCount} ${r.blurCount===1?'switch':'switches'} away from the tab <span class="neg">&minus;${r.switchPenalty}</span><br><span style="opacity:.8">5 points each</span>` : ''}
+            ${r.idlePenalty ? `<hr>Time spent away <span class="neg">&minus;${r.idlePenalty}</span><br><span style="opacity:.8">5 points per 15 seconds beyond the first minute</span>` : ''}
+            ${(r.switchPenalty + r.idlePenalty) > r.penalty
+              ? `<hr><span style="opacity:.8">That comes to ${r.switchPenalty + r.idlePenalty}, capped at ${r.penalty} so a score cannot fall below zero.</span>`
+              : ''}
+            <hr>
+            Final <b>${r.score}</b>
+          </div>
         </div>
         <p class="pprompt">${esc(r.prompt)}</p>
         <p class="pnotes">${esc(r.notes)}</p>
@@ -668,7 +761,7 @@ async function screenResults(){
     <div class="verdict"><h3>${d.winnerId?'Why this prompt won':'No winner this round'}</h3><p>${esc(d.verdict)}</p></div>
     <div class="reveal"><h3>The hidden prompt behind the image</h3><code>${esc(d.secretPrompt)}</code></div>
     ${rows}
-    ${d.board.some(r=>r.blurCount)?'<p class="flagnote">A badge shows how many times someone switched away from this tab during the round. Notifications and second monitors trigger it too, so read it as a signal rather than a verdict.</p>':''}`;
+    ${d.board.some(r=>r.blurCount)?`<p class="flagnote">Leaving the tab costs <b>${d.blurPenalty} points</b> each time, plus ${d.blurPenalty} more for every 15 seconds spent away beyond the first minute. The subtraction above shows the total. Where two scores tie, whoever stayed on the tab ranks higher. Notifications and second monitors trigger it too, so a badge is not an accusation.</p>`:''}`;
 
   app.classList.add('reveal-in');
   setTimeout(() => app.classList.remove('reveal-in'), 700);
@@ -711,13 +804,41 @@ async function tick(){
 
     // The server says outright when the round we were showing was aborted, so
     // this fires from any screen — including a results page someone is reading.
+    const wasAborted = aborted;
     if (s.sessionAborted) aborted = true;
-    if (aborted || (s.round && s.round.status === 'aborted')) { playing = false; return screenAborted(); }
+    if (aborted || (s.round && s.round.status === 'aborted')) {
+      playing = false;
+      if (!wasAborted) renderWho();   // the link only exists once a session is called off
+      return screenAborted();
+    }
     if (s.round) sessionStorage.setItem('pa_round', JSON.stringify({ id: s.round.id, status: s.round.status }));
 
     if (!s.round) { clearInterval(timer); return screenWaiting('No round yet','The host has not generated a question. This page updates on its own.'); }
 
+    // Penalties, locks and the hidden image belong to one round. A tab left
+    // open across two rounds would otherwise carry them forward and lock
+    // someone out of a round they have not played.
+    if (s.round && s.round.id !== seenRoundId) {
+      seenRoundId = s.round.id;
+      awayCount = 0; blocked = false; locked = false; needsAck = false;
+      imageReady = false; returnReported = false; entrySig = '';
+      applyGuard();
+    }
+
     playing = s.round.status === 'live';
+
+    // A closed tab leaves the absence clock running. A fresh page starts with
+    // away = false, so setAway would short-circuit and never report the return —
+    // say so explicitly, once, or they are charged to the end of the round.
+    if (playing && name && !returnReported) {
+      returnReported = true;
+      api('/api/back',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({name})}).catch(()=>{});
+    }
+
+    // The server is the authority on how many times this player has left.
+    if (Number(s.mySwitches) > awayCount) awayCount = Number(s.mySwitches);
+    if (awayCount >= HIDE_AT) blocked = true;
+    if (awayCount >= LOCK_AT) locked = true;
     if (s.round.status === 'draft') { screenLobby(); paintRoster(s.players, false); return; }
     if (s.round.status === 'published') { clearInterval(timer); return screenResults(); }
     if (s.round.status === 'closed') { clearInterval(timer); return screenWaiting('Time is up','Entries are closed. Results land here shortly.'); }
@@ -733,10 +854,11 @@ async function tick(){
 
     const left = s.myEndsAt - (Math.floor(Date.now()/1000) + skew);
     if (s.mine && left <= 0) return screenLocked(s);
-    if (s.mine) { screenSubmitted(s); paintRoster(s.players, true); runClock(s.myEndsAt, skew); return; }
+    if (s.mine) { screenSubmitted(s); paintRoster(s.players, true); applyGuard(); runClock(s.myEndsAt, skew); return; }
     if (left <= -2) return screenOutOfTime(s);
     screenPlay(s);
     paintRoster(s.players, true);
+    applyGuard();
     runClock(s.myEndsAt, skew);
   } catch(e){ /* transient network blips are not worth a screen change */ }
 }
@@ -820,7 +942,14 @@ lb.addEventListener('click', e => { if (e.target === lb) closeImage(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeImage(); });
 document.addEventListener('click', e => {
   const z = e.target.closest && e.target.closest('[data-zoom]');
-  if (z) openImage(z.dataset.zoom, z.dataset.label || '');
+  if (z) { openImage(z.dataset.zoom, z.dataset.label || ''); return; }
+
+  // One breakdown open at a time; tapping anywhere else closes it.
+  const why = e.target.closest && e.target.closest('[data-tip]');
+  const open = document.querySelector('.tip.open');
+  const target = why && document.getElementById('tip_' + why.dataset.tip);
+  if (open && open !== target) open.classList.remove('open');
+  if (target && !e.target.closest('.tip')) target.classList.toggle('open');
 });
 
 renderWho();
