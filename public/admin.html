@@ -115,7 +115,7 @@ input:focus{border-color:var(--amber);outline:none}
 <div class="wrap">
   <div class="hostbar">
     <div>Admin console — host only <span>&nbsp;·&nbsp; hidden prompts appear here, keep this screen off the projector</span></div>
-    <span style="opacity:.7;font-weight:500;font-size:12px">build 20260923-1355</span>
+    <span style="opacity:.7;font-weight:500;font-size:12px">build 20260923-1535</span>
     <span><button class="linkish" id="pastlink" hidden>Past rounds</button>
     &nbsp;·&nbsp;
     <button class="linkish" id="newsession" hidden>Start a new session</button></span>
@@ -128,6 +128,7 @@ input:focus{border-color:var(--amber);outline:none}
 const app=document.getElementById('app');
 let key=sessionStorage.getItem('pa_key')||'';
 let view='',timer=null,imgCache={};
+const fmt=n=>(Number.isInteger(Number(n))?String(Number(n)):Number(n).toFixed(1));
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const mmss=s=>Number.isFinite(s)
   ? `${Math.floor(Math.max(0,s)/60)}:${String(Math.floor(Math.max(0,s))%60).padStart(2,'0')}`
@@ -308,19 +309,19 @@ async function screenOneRound(id){
           </div>
         </div>
         <div class="scwrap">
-          <span class="sc">${r.score}</span>
-          ${(r.switchPenalty||r.idlePenalty)?`<span class="neg">${r.rawScore} &minus; ${r.rawScore - r.score}</span>`:''}
+          <span class="sc">${fmt(r.score)}</span>
+          ${(r.switchPenalty||r.idlePenalty)?`<span class="neg">${fmt(r.rawScore)} &minus; ${fmt(r.rawScore - r.score)}</span>`:''}
           <br><button class="why" data-tip2="${r.id}" aria-label="How this score was worked out">?</button>
           <div class="tip2" id="t2_${r.id}">
             <b>How this score was worked out</b><hr>
-            Judge's score <b>${r.rawScore}</b><br>
+            Judge's score <b>${fmt(r.rawScore)}</b><br>
             <span style="opacity:.8">subject 35, setting 20, style 20, light and mood 15, composition 10</span>
-            ${r.switchPenalty?`<hr>${r.blurCount} ${r.blurCount===1?'switch':'switches'} away <span class="n">&minus;${r.switchPenalty}</span><br><span style="opacity:.8">${d.blurPenalty} points each</span>`:''}
-            ${r.idlePenalty?`<hr>Time spent away <span class="n">&minus;${r.idlePenalty}</span><br><span style="opacity:.8">${d.blurPenalty} points per 15 seconds beyond the first minute</span>`:''}
+            ${r.switchPenalty?`<hr>${r.blurCount} ${r.blurCount===1?'switch':'switches'} away <span class="n">&minus;${fmt(r.switchPenalty)}</span><br><span style="opacity:.8">${d.blurPenalty} points each</span>`:''}
+            ${r.idlePenalty?`<hr>Time spent away <span class="n">&minus;${fmt(r.idlePenalty)}</span><br><span style="opacity:.8">${d.blurPenalty} points per 15 seconds beyond the first minute</span>`:''}
             ${(r.switchPenalty + r.idlePenalty) > (r.rawScore - r.score)
-              ? `<hr><span style="opacity:.8">Penalties came to ${r.switchPenalty + r.idlePenalty}, capped at ${r.rawScore - r.score} so the score cannot fall below zero.</span>`
+              ? `<hr><span style="opacity:.8">Penalties came to ${fmt(r.switchPenalty + r.idlePenalty)}, capped at ${fmt(r.rawScore - r.score)} so the score cannot fall below zero.</span>`
               : ''}
-            <hr>Final <b>${r.score}</b>
+            <hr>Final <b>${fmt(r.score)}</b>
           </div>
         </div>
       </div>`).join('') || '<p class="lede">No entries.</p>'}

@@ -143,6 +143,11 @@ https://prompt-arena.<your-subdomain>.workers.dev
 
 ## Things worth knowing
 
+**How scores are worked out.** The judge scores each rubric part against its own ceiling —
+subject 35, setting 20, style 20, light and mood 15, composition 10 — and the total is their
+sum to one decimal place. Asking for a single overall figure made the model reach for round
+numbers and produced constant ties; five parts summed spread out naturally.
+
 **A round can end with no winner.** If the best entry scores zero, nobody is crowned. The
 full board still publishes with every prompt, every rendered image and the judge's notes,
 under a "No winner this round" heading.

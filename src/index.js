@@ -326,6 +326,21 @@ async function repairImages(env, round) {
 // which is what used to make everything past ~40 entries silently score zero.
 const JUDGE_CHUNK = 25;
 
+// One decimal throughout. Totals built from five parts land on varied numbers,
+// where a single figure asked of a model clusters on multiples of five.
+const round1 = (n) => Math.round((Number(n) || 0) * 10) / 10;
+
+const PARTS = [['subject', 35], ['setting', 20], ['style', 20], ['light', 15], ['composition', 10]];
+
+/** Sums the rubric parts, falling back to a plain score if that is all we got. */
+function totalFrom(row) {
+  const hasParts = PARTS.some(([k]) => row[k] !== undefined && row[k] !== null);
+  if (!hasParts) return Math.max(0, Math.min(100, round1(row.score)));
+  const sum = PARTS.reduce((acc, [k, max]) =>
+    acc + Math.max(0, Math.min(max, Number(row[k]) || 0)), 0);
+  return Math.max(0, Math.min(100, round1(sum)));
+}
+
 const parseJudgeJson = (raw) => {
   const a = raw.indexOf('{');
   const b = raw.lastIndexOf('}');
@@ -361,11 +376,19 @@ group and do NOT assume one of them is the best — a group may contain no good 
 
 ${entries}
 
+Score each part separately, out of its own maximum, rather than giving one overall figure.
+Use one decimal place and judge each part on its own merits — a prompt that is two thirds of
+the way to the right subject scores 23.3 for subject, not 25 or 20.
+
 Reply with ONLY a JSON object, no prose before or after:
-{ "scores": [ { "id": "<the id given above>", "score": <0-100>, "notes": "<one sentence on what this prompt got right and what it missed>" } ] }
+{ "scores": [ {
+  "id": "<the id given above>",
+  "subject": <0-35>, "setting": <0-20>, "style": <0-20>, "light": <0-15>, "composition": <0-10>,
+  "notes": "<one sentence on what this prompt got right and what it missed>"
+} ] }
 Include every entry.`;
 
-  const parsed = parseJudgeJson(await askJudge(env, RUBRIC, user, 2000));
+  const parsed = parseJudgeJson(await askJudge(env, RUBRIC, user, 2600));
   return parsed && Array.isArray(parsed.scores) ? parsed.scores : [];
 }
 
@@ -425,7 +448,7 @@ async function judgeRound(env, round) {
       if (!byId.has(row.id) || scored.has(row.id)) continue;
       scored.set(row.id, {
         id: row.id,
-        score: Math.max(0, Math.min(100, Math.round(Number(row.score) || 0))),
+        score: totalFrom(row),
         notes: String(row.notes || '').slice(0, 600),
       });
     }
@@ -460,7 +483,7 @@ async function judgeRound(env, round) {
       id: sub.id,
       raw,
       switches,
-      score: Math.max(0, raw - switches * BLUR_PENALTY - idle),
+      score: round1(Math.max(0, raw - switches * BLUR_PENALTY - idle)),
       notes: hit ? hit.notes : 'Not scored by the judge.',
     });
   }
@@ -793,7 +816,7 @@ export default {
             prompt: r.prompt,
             score: r.score,
             rawScore: r.raw_score === null ? r.score : r.raw_score,
-            penalty: Math.max(0, (Number(r.raw_score) || 0) - (Number(r.score) || 0)),
+            penalty: Math.round(Math.max(0, (Number(r.raw_score) || 0) - (Number(r.score) || 0)) * 10) / 10,
             switchPenalty: (Number(r.blur_count) || 0) * BLUR_PENALTY,
             idlePenalty: Number(r.away_penalty) || 0,
             notes: r.notes,

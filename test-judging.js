@@ -37,7 +37,13 @@ function makeEnv({ entries, scoreFor, winnerFrom = 0, breakChunk = -1 }) {
         const ids = [...user.matchAll(/id=(\w+)/g)].map((m) => m[1]);
         if (chunkCalls === breakChunk) return Promise.resolve({ response: 'sorry, I cannot' });
         return Promise.resolve({ response: JSON.stringify({
-          scores: ids.map((id) => ({ id, score: scoreFor(id), notes: 'note for ' + id })) }) });
+          scores: ids.map((id) => {
+            const total = scoreFor(id);
+            // split the target total across the five parts, as the model would
+            const w = [0.35, 0.20, 0.20, 0.15, 0.10];
+            const [subject, setting, style, light, composition] = w.map((x) => Math.round(total * x * 10) / 10);
+            return { id, subject, setting, style, light, composition, notes: 'note for ' + id };
+          }) }) });
       },
     },
     DB: {
@@ -234,6 +240,72 @@ const check = (label, pass, detail = '') => out.push([pass, label, detail]);
     check('a late switch still reaches the score',
       JSON.stringify(scoreOf(writes, 's1')) === '{"final":50,"raw":60}',
       '60 - 10 -> ' + JSON.stringify(scoreOf(writes, 's1')));
+  }
+
+  // ---- 14. scores carry one decimal, built from the rubric parts ---------
+  {
+    const entries = mkEntries(1);
+    const { env, writes } = makeEnv({ entries, scoreFor: () => 0 });
+    env.AI.run = (m, { messages }) => {
+      if (messages[1].content.includes('winnerId')) {
+        return Promise.resolve({ response: JSON.stringify({ winnerId: 's1', verdict: 'v' }) });
+      }
+      return Promise.resolve({ response: JSON.stringify({ scores: [
+        { id: 's1', subject: 28.4, setting: 12.7, style: 9.3, light: 6.8, composition: 4.2, notes: 'n' },
+      ] }) });
+    };
+    await judgeRound(env, round);
+    check('total is summed from the parts to one decimal',
+      scoreOf(writes, 's1').raw === 61.4, 'expected 61.4, got ' + scoreOf(writes, 's1').raw);
+  }
+
+  // ---- 15. a part outside its ceiling is clamped -------------------------
+  {
+    const entries = mkEntries(1);
+    const { env, writes } = makeEnv({ entries, scoreFor: () => 0 });
+    env.AI.run = (m, { messages }) => {
+      if (messages[1].content.includes('winnerId')) {
+        return Promise.resolve({ response: JSON.stringify({ winnerId: 's1', verdict: 'v' }) });
+      }
+      return Promise.resolve({ response: JSON.stringify({ scores: [
+        { id: 's1', subject: 90, setting: 20, style: 20, light: 15, composition: 10, notes: 'n' },
+      ] }) });
+    };
+    await judgeRound(env, round);
+    check('an over-max part is clamped to its ceiling',
+      scoreOf(writes, 's1').raw === 100, 'subject 90 capped at 35 -> ' + scoreOf(writes, 's1').raw);
+  }
+
+  // ---- 16. an old-style plain score still works --------------------------
+  {
+    const entries = mkEntries(1);
+    const { env, writes } = makeEnv({ entries, scoreFor: () => 0 });
+    env.AI.run = (m, { messages }) => {
+      if (messages[1].content.includes('winnerId')) {
+        return Promise.resolve({ response: JSON.stringify({ winnerId: 's1', verdict: 'v' }) });
+      }
+      return Promise.resolve({ response: JSON.stringify({ scores: [{ id: 's1', score: 72.5, notes: 'n' }] }) });
+    };
+    await judgeRound(env, round);
+    check('falls back to a plain score if parts are missing',
+      scoreOf(writes, 's1').raw === 72.5, String(scoreOf(writes, 's1').raw));
+  }
+
+  // ---- 17. penalties keep the decimal ------------------------------------
+  {
+    const entries = mkEntries(1, { s1: 1 });
+    const { env, writes } = makeEnv({ entries, scoreFor: () => 0 });
+    env.AI.run = (m, { messages }) => {
+      if (messages[1].content.includes('winnerId')) {
+        return Promise.resolve({ response: JSON.stringify({ winnerId: 's1', verdict: 'v' }) });
+      }
+      return Promise.resolve({ response: JSON.stringify({ scores: [
+        { id: 's1', subject: 28.4, setting: 12.7, style: 9.3, light: 6.8, composition: 4.2, notes: 'n' },
+      ] }) });
+    };
+    await judgeRound(env, round);
+    check('penalty subtracts cleanly from a decimal score',
+      scoreOf(writes, 's1').final === 56.4, '61.4 - 5 -> ' + scoreOf(writes, 's1').final);
   }
 
   console.log('');

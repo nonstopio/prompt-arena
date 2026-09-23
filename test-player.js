@@ -3,7 +3,7 @@ const fs = require('fs');
 const html = fs.readFileSync('/home/claude/prompt-arena/public/index.html', 'utf8');
 const now = () => Math.floor(Date.now() / 1000);
 
-function boot({ name = 'Rushikesh Nere', state }) {
+function boot({ name = 'Rushikesh Nere', state, onJoin }) {
   const calls = { celebrate: 0, rafFrames: 0, fillRects: 0 };
   const dom = new JSDOM(html, {
     runScripts: 'dangerously', pretendToBeVisual: true, url: 'https://x.test/',
@@ -29,6 +29,7 @@ function boot({ name = 'Rushikesh Nere', state }) {
       w.fetch = (u) => {
         u = String(u);
         let b = { ok: true };
+        if (u.startsWith('/api/join') && onJoin) onJoin();
         if (u.startsWith('/api/state')) b = state(u);
         else if (u.startsWith('/api/results')) b = {
           round: { id: 'r1', status: 'published', serverTime: now() }, published: true,
@@ -369,6 +370,47 @@ async function run() {
       guardText.replace(/\s+/g, ' ').trim().slice(0, 50) || '(clean)');
     check('  image visible again', !d.querySelector('.target').classList.contains('hidden-guard'));
     check('  prompt box usable again', !!d.getElementById('pr') && !d.getElementById('pr').disabled);
+  }
+
+  // ---- 4h. a returning player takes their seat before the round opens -----
+  {
+    let phase = 'published', joins = 0, roster = [];
+    const { d } = boot({ state: () => (phase === 'published'
+      ? { round: { id: 'r1', status: 'published', serverTime: now() }, entries: 1, myEndsAt: now(),
+          draft: '', players: [], mySwitches: 0, myIdlePenalty: 0,
+          mine: { id: 's1', prompt: 'a fox' }, sessionAborted: false }
+      : { round: { id: 'r2', status: 'draft', serverTime: now() }, entries: 0, myEndsAt: null,
+          draft: '', players: roster, mySwitches: 0, myIdlePenalty: 0,
+          mine: null, sessionAborted: false })
+    , onJoin: () => { joins++; roster = [{ name: 'Rushikesh Nere', done: false }]; } });
+
+    await wait(1200);
+    check('sitting on the results page', head(d) === 'Results', head(d));
+    phase = 'draft';                       // the host generates the next round
+    await wait(4000);
+    check('next round: joined without retyping a name', joins >= 1, `join called ${joins}x`);
+    check('  lobby counts them', /1 joined so far/.test((d.getElementById('rtitle') || { textContent: '' }).textContent),
+      (d.getElementById('rtitle') || { textContent: '-' }).textContent);
+    check('  their own name is on the roster', /Rushikesh Nere/.test((d.getElementById('chips') || { textContent: '' }).textContent));
+    check('  joined once, not on every poll', joins <= 2, `join called ${joins}x across ~2 polls`);
+  }
+
+  // ---- 4i. the clock bar sticks and stays informative --------------------
+  {
+    const { d } = boot({ state: () => ({
+      round: { id: 'r1', status: 'live', endsAt: now() + 42, serverTime: now() },
+      entries: 7, myEndsAt: now() + 42, draft: '', players: [], mySwitches: 2, myIdlePenalty: 5,
+      lockAt: 3, hideAt: 2, penalty: 5, mine: null, sessionAborted: false }) });
+    await wait(1200);
+    const bar = d.querySelector('.clockbar');
+    check('the clock sits in a sticky bar', !!bar);
+    check('  it is the first thing on the screen', d.getElementById('app').firstElementChild === bar);
+    check('  the long instructions moved out of it', !bar.querySelector('.clocklabel') && !!d.querySelector('p.clocklabel'));
+    check('  under a minute turns it urgent', d.getElementById('clock').classList.contains('urgent'),
+      d.getElementById('clock').textContent);
+    const tally = d.getElementById('ctally').textContent.replace(/\s+/g, ' ');
+    check('  it carries the entry count', /7 entries in/.test(tally), tally);
+    check('  and what penalties have cost', /−15|-15/.test(tally), tally);
   }
 
   // ---- 5. a fresh player must never see an abort -------------------------

@@ -33,6 +33,7 @@ button{font:inherit;cursor:pointer}
 .brandfoot{display:flex;justify-content:center;padding:44px 0 0;opacity:.55}
 .brandfoot .brand{height:24px}
 .wrap{max-width:860px;margin:0 auto;padding:28px 20px 96px}
+@media (max-width:420px){.wrap{padding-left:16px;padding-right:16px}}
 
 header.bar{
   display:flex;align-items:baseline;justify-content:space-between;
@@ -69,17 +70,34 @@ textarea{min-height:130px;line-height:1.6}
 .btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
 
 /* the clock is the loud element */
-.clockrow{
-  display:flex;align-items:center;justify-content:space-between;
-  gap:18px;flex-wrap:wrap;margin-bottom:20px;
+/* The clock follows the page. Sticky rather than fixed so it never covers
+   content, and it sits below the notch on phones that have one. */
+.clockbar{
+  position:-webkit-sticky;position:sticky;
+  top:0;z-index:25;
+  display:flex;align-items:center;gap:14px;
+  margin:0 -20px 16px;padding:10px 20px;
+  padding-top:calc(10px + env(safe-area-inset-top,0px));
+  background:rgba(18,17,26,.92);
+  border-bottom:1px solid var(--line);
+}
+@supports ((backdrop-filter:blur(10px)) or (-webkit-backdrop-filter:blur(10px))){
+  .clockbar{background:rgba(18,17,26,.78);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
 }
 .clock{
   font-family:var(--display);font-weight:700;
-  font-size:clamp(52px,13vw,86px);line-height:.9;letter-spacing:-.04em;
+  font-size:clamp(30px,8vw,44px);line-height:1;letter-spacing:-.03em;
   font-variant-numeric:tabular-nums;color:var(--amber);
 }
 .clock.urgent{color:var(--rose)}
-.clocklabel{font-size:14px;color:var(--muted);max-width:26ch}
+.clockword{font-size:13px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;font-weight:600}
+.clocktally{margin-left:auto;font-size:13px;color:var(--muted);text-align:right;line-height:1.35}
+.clocktally b{color:var(--cyan);font-weight:600}
+.clocklabel{font-size:14px;color:var(--muted);margin:0 0 22px;line-height:1.55}
+@media (max-width:420px){
+  .clockbar{gap:10px;padding-left:16px;padding-right:16px;margin-left:-16px;margin-right:-16px}
+  .clockword{display:none}
+}
 .tally{font-size:14px;color:var(--muted)}
 .tally b{color:var(--cyan);font-weight:600}
 
@@ -225,7 +243,7 @@ textarea{min-height:130px;line-height:1.6}
     <div class="lbhead"><span class="lbname" id="lbname"></span><button class="btn ghost" id="lbx">Close</button></div>
     <div class="lbbody"><img id="lbimg" alt=""></div>
   </div>
-  <div style="text-align:center;color:var(--muted);font-size:11px;opacity:.5;margin-top:40px">build 20260923-1355</div>
+  <div style="text-align:center;color:var(--muted);font-size:11px;opacity:.5;margin-top:40px">build 20260923-1535</div>
   <div class="brandfoot"><img class="brand" alt="NonStop io Technologies" src="data:image/png;base64,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"></div>
 </div>
 
@@ -237,6 +255,8 @@ let view = '';           // what's currently rendered, so we don't redraw mid-ty
 let targetCache = {};    // roundId -> base64
 let timer = null;
 
+// Scores carry one decimal; whole numbers should not gain a pointless ".0".
+const fmt = n => (Number.isInteger(Number(n)) ? String(Number(n)) : Number(n).toFixed(1));
 const esc = s => String(s??'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const mmss = s => Number.isFinite(s)
   ? `${Math.floor(Math.max(0,s)/60)}:${String(Math.floor(Math.max(0,s))%60).padStart(2,'0')}`
@@ -456,6 +476,16 @@ const RULES = `<ul class="rules">
 
 const ROSTER = '<div class="roster"><h3 id="rtitle">In the room</h3><div class="chips" id="chips"></div></div>';
 
+/** Keeps the sticky bar useful: how many are in, and what it has cost you. */
+function paintTally(state){
+  const el = document.getElementById('ctally');
+  if (!el) return;
+  const n = state.entries;
+  const lost = (Number(state.mySwitches) || 0) * PENALTY + (Number(state.myIdlePenalty) || 0);
+  el.innerHTML = `<b>${n}</b> ${n === 1 ? 'entry' : 'entries'} in`
+    + (lost ? `<br><span style="color:var(--rose)">&minus;${lost} so far</span>` : '');
+}
+
 function paintRoster(players, live){
   const box = document.getElementById('chips');
   if (!box) return;
@@ -549,10 +579,12 @@ function screenPlay(state){
   if (view==='play:'+state.round.id) return;
   view='play:'+state.round.id;
   app.innerHTML = `
-    <div class="clockrow">
-      <div class="clock" id="clock">--:--</div>
-      <div class="clocklabel">Study the image, write the prompt you think produced it. One entry each. Whatever is in the box when the clock hits zero is submitted for you.</div>
+    <div class="clockbar">
+      <span class="clock" id="clock">--:--</span>
+      <span class="clockword">left</span>
+      <span class="clocktally" id="ctally"></span>
     </div>
+    <p class="clocklabel">Study the image, write the prompt you think produced it. One entry each. Whatever is in the box when the clock hits zero is submitted for you.</p>
     <div class="card" style="margin-bottom:24px">
       <h3 style="font-family:var(--display);font-size:19px;font-weight:700;margin:0 0 14px">How this works</h3>
       ${RULES}
@@ -655,10 +687,12 @@ function screenSubmitted(state){
   }
   view=k;
   app.innerHTML = `
-    <div class="clockrow">
-      <div class="clock" id="clock">--:--</div>
-      <div class="clocklabel">Your entry is saved. Keep comparing against the image and revise as often as you like until the clock runs out. <b style="color:var(--rose)">Stay on this tab — switching still costs 5 points each time, a third switch locks your entry, and being away over a minute costs 5 more every 15 seconds.</b></div>
+    <div class="clockbar">
+      <span class="clock" id="clock">--:--</span>
+      <span class="clockword">left</span>
+      <span class="clocktally" id="ctally"></span>
     </div>
+    <p class="clocklabel">Your entry is saved. Keep comparing against the image and revise as often as you like until the clock runs out. <b style="color:var(--rose)">Stay on this tab — switching still costs 5 points each time, a third switch locks your entry, and being away over a minute costs 5 more every 15 seconds.</b></p>
     <div class="target" id="target"><div class="shimmer"></div><div class="guard"></div></div>
     <div class="card" id="entrybox"></div>` + ROSTER;
   loadImage('target', state.round.id, document.getElementById('target'));
@@ -731,21 +765,21 @@ async function screenResults(){
           ${r.id===d.winnerId?'<span class="crown">winner</span>':''}
           ${r.blurCount?`<span class="flag">left the tab ${r.blurCount}\u00d7</span>`:''}
           ${r.penalty
-            ? `<span class="pmath"><s>${r.rawScore}</s> &minus; <em>${r.penalty}</em> =</span><span class="pscore" style="margin-left:8px">${r.score}</span>`
-            : `<span class="pscore">${r.score}</span>`}
+            ? `<span class="pmath"><s>${fmt(r.rawScore)}</s> &minus; <em>${fmt(r.penalty)}</em> =</span><span class="pscore" style="margin-left:8px">${fmt(r.score)}</span>`
+            : `<span class="pscore">${fmt(r.score)}</span>`}
           <button class="why" data-tip="${r.id}" aria-label="How this score was worked out">?</button>
           <div class="tip" id="tip_${r.id}">
             <b>How this score was worked out</b>
             <hr>
-            Judge's score <b>${r.rawScore}</b><br>
+            Judge's score <b>${fmt(r.rawScore)}</b><br>
             <span style="opacity:.8">subject 35, setting 20, style 20, light and mood 15, composition 10</span>
-            ${r.switchPenalty ? `<hr>${r.blurCount} ${r.blurCount===1?'switch':'switches'} away from the tab <span class="neg">&minus;${r.switchPenalty}</span><br><span style="opacity:.8">5 points each</span>` : ''}
-            ${r.idlePenalty ? `<hr>Time spent away <span class="neg">&minus;${r.idlePenalty}</span><br><span style="opacity:.8">5 points per 15 seconds beyond the first minute</span>` : ''}
+            ${r.switchPenalty ? `<hr>${r.blurCount} ${r.blurCount===1?'switch':'switches'} away from the tab <span class="neg">&minus;${fmt(r.switchPenalty)}</span><br><span style="opacity:.8">5 points each</span>` : ''}
+            ${r.idlePenalty ? `<hr>Time spent away <span class="neg">&minus;${fmt(r.idlePenalty)}</span><br><span style="opacity:.8">5 points per 15 seconds beyond the first minute</span>` : ''}
             ${(r.switchPenalty + r.idlePenalty) > r.penalty
-              ? `<hr><span style="opacity:.8">That comes to ${r.switchPenalty + r.idlePenalty}, capped at ${r.penalty} so a score cannot fall below zero.</span>`
+              ? `<hr><span style="opacity:.8">That comes to ${fmt(r.switchPenalty + r.idlePenalty)}, capped at ${fmt(r.penalty)} so a score cannot fall below zero.</span>`
               : ''}
             <hr>
-            Final <b>${r.score}</b>
+            Final <b>${fmt(r.score)}</b>
           </div>
         </div>
         <p class="pprompt">${esc(r.prompt)}</p>
@@ -839,7 +873,17 @@ async function tick(){
     if (Number(s.mySwitches) > awayCount) awayCount = Number(s.mySwitches);
     if (awayCount >= HIDE_AT) blocked = true;
     if (awayCount >= LOCK_AT) locked = true;
-    if (s.round.status === 'draft') { screenLobby(); paintRoster(s.players, false); return; }
+    if (s.round.status === 'draft') {
+      // Take the seat now, not when the round opens. A returning player never
+      // retypes their name, so without this they sit in an empty lobby and the
+      // host console reads zero joined for a room that has already arrived.
+      if (!s.players.some((p) => p.name.toLowerCase() === name.toLowerCase())) {
+        await api('/api/join',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({name})}).catch(()=>{});
+      }
+      screenLobby();
+      paintRoster(s.players, false);
+      return;
+    }
     if (s.round.status === 'published') { clearInterval(timer); return screenResults(); }
     if (s.round.status === 'closed') { clearInterval(timer); return screenWaiting('Time is up','Entries are closed. Results land here shortly.'); }
 
@@ -854,10 +898,11 @@ async function tick(){
 
     const left = s.myEndsAt - (Math.floor(Date.now()/1000) + skew);
     if (s.mine && left <= 0) return screenLocked(s);
-    if (s.mine) { screenSubmitted(s); paintRoster(s.players, true); applyGuard(); runClock(s.myEndsAt, skew); return; }
+    if (s.mine) { screenSubmitted(s); paintRoster(s.players, true); paintTally(s); applyGuard(); runClock(s.myEndsAt, skew); return; }
     if (left <= -2) return screenOutOfTime(s);
     screenPlay(s);
     paintRoster(s.players, true);
+    paintTally(s);
     applyGuard();
     runClock(s.myEndsAt, skew);
   } catch(e){ /* transient network blips are not worth a screen change */ }
